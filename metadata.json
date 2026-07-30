@@ -1,0 +1,6 @@
+{
+  "name": "Cinematic Rover Portfolio",
+  "description": "A premium, scroll-driven 3D-feeling portfolio featuring an autonomous rover guide, frosted glass UI, cinematic camera tracking, interactive timeline, and developer console terminal.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

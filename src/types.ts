@@ -1,0 +1,48 @@
+/**
+ * @license
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+export type ScrollStage = 'hero' | 'about' | 'skills' | 'projects' | 'timeline' | 'contact' | 'final';
+
+export interface Project {
+  id: string;
+  title: string;
+  description: string;
+  challenge?: string;
+  solution?: string;
+  result?: string;
+  role: string;
+  period: string;
+  tech: string[];
+  demoUrl: string;
+  githubUrl: string;
+  modelType: 'lander' | 'satellite' | 'drone' | 'radar';
+  imageUrl?: string;
+}
+
+export interface SkillNode {
+  id: string;
+  name: string;
+  category: 'core' | 'frontend' | 'backend' | 'animation' | 'tooling';
+  level: number; // 0 to 100
+  x: number;
+  y: number;
+  z: number;
+  connections?: string[]; // IDs of connected skills for neural net
+}
+
+export interface TimelineEvent {
+  id: string;
+  chapterTitle: string;
+  year: string;
+  title: string;
+  company: string;
+  description: string;
+  coordinates: { x: number; y: number; z: number };
+}
+
+export interface SoundConfig {
+  muted: boolean;
+  volume: number;
+}
