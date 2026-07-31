@@ -9,11 +9,14 @@ import { sound } from './SoundManager';
 import { LiquidGlass } from './LiquidGlass';
 
 
+import { FileText, ExternalLink } from 'lucide-react';
+
 interface AboutHologramProps {
   scrollProgress: number; // For scroll-tied assembly offsets
+  onOpenResume?: () => void;
 }
 
-export const AboutHologram: React.FC<AboutHologramProps> = ({ scrollProgress }) => {
+export const AboutHologram: React.FC<AboutHologramProps> = ({ scrollProgress, onOpenResume }) => {
   const focusStart = 0.15;
   const focusEnd = 0.33;
 
@@ -63,13 +66,25 @@ export const AboutHologram: React.FC<AboutHologramProps> = ({ scrollProgress }) 
           <LiquidGlass radius="1.5rem" distortion={12} blur={0} tint={0.08} className="p-8 cursor-default group space-y-6">
 
             {/* Bio Header */}
-            <div>
-              <h3 className="text-2xl font-sans font-medium text-white mb-3">
-                Hi, I'm <span className="font-semibold text-white underline underline-offset-8 decoration-white/20">Sheikh Tijan Touray</span>
-              </h3>
-              <p className="text-white/75 text-sm leading-relaxed">
-                I'm a frontend engineer from The Gambia driven by a passion for building clean, fast, and memorable web experiences. I specialize in modern React ecosystems, Next.js, TypeScript, and fine-tuned animations.
-              </p>
+            <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+              <div className="space-y-2 max-w-xl">
+                <h3 className="text-2xl font-sans font-medium text-white">
+                  Hi, I'm <span className="font-semibold text-white underline underline-offset-8 decoration-white/20">Sheikh Tijan Touray</span>
+                </h3>
+                <p className="text-white/75 text-sm leading-relaxed">
+                  I'm a frontend engineer from The Gambia driven by a passion for building clean, fast, and memorable web experiences. I specialize in modern React ecosystems, Next.js, TypeScript, and fine-tuned animations.
+                </p>
+              </div>
+
+              {onOpenResume && (
+                <button
+                  onClick={() => { onOpenResume(); sound.playConfirm(); }}
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-emerald-500/40 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 font-mono text-xs font-medium transition-all duration-300 shrink-0 cursor-pointer shadow-lg hover:shadow-emerald-500/10"
+                >
+                  <FileText size={14} className="text-emerald-400" />
+                  <span>View Resume</span>
+                </button>
+              )}
             </div>
 
             {/* Design Philosophy & Motivation */}

@@ -7,6 +7,12 @@ import React, { useEffect, useRef, useState } from 'react';
 import { gsap } from 'gsap';
 import { sound } from './SoundManager';
 import { TimelineEvent } from '../types';
+import {
+  themeStore,
+  ENVIRONMENT_CONFIGS,
+  ROVER_FINISH_CONFIGS,
+  ROAD_ACCENT_CONFIGS,
+} from '../themeStore';
 
 interface CinematicCanvasProps {
   scrollProgress: number; // 0 to 1
@@ -265,8 +271,19 @@ export const CinematicCanvas: React.FC<CinematicCanvasProps> = ({
       const width = canvas.width;
       const height = canvas.height;
 
-      // Base Background Clear
-      ctx.fillStyle = '#003cffff'; // Ultra deep dark cosmic base
+      const activeTheme = themeStore.getState();
+      const envConfig = ENVIRONMENT_CONFIGS[activeTheme.environment];
+      const roadConfig = ROAD_ACCENT_CONFIGS[activeTheme.roadAccent];
+      const roverFinishConfig = ROVER_FINISH_CONFIGS[activeTheme.roverFinish];
+
+      // Motion Preference Multipliers
+      const motionPreset = activeTheme.motionPreset || (activeTheme.reducedMotion ? 'reduced' : 'full');
+      const motionMult = motionPreset === 'minimal' ? 0.05 : motionPreset === 'reduced' ? 0.3 : 1.0;
+      const idleMult   = motionPreset === 'minimal' ? 0.0  : motionPreset === 'reduced' ? 0.2 : 1.0;
+      const mouseMult  = motionPreset === 'minimal' ? 0.05 : motionPreset === 'reduced' ? 0.3 : 1.0;
+
+      // Base Background Clear according to active environment
+      ctx.fillStyle = envConfig.canvasClear;
       ctx.fillRect(0, 0, width, height);
 
       // Core World Metrics
@@ -283,7 +300,7 @@ export const CinematicCanvas: React.FC<CinematicCanvasProps> = ({
 
       // Autonomous micro-steering adjustments (subtle path tracking corrections)
       const speedFactor = Math.min(1.0, Math.abs(newVel) * 220.0);
-      const microSteerWobble = Math.sin(time * 3.2 + roverZ * 0.05) * 0.035 * speedFactor;
+      const microSteerWobble = Math.sin(time * 3.2 + roverZ * 0.05) * 0.035 * speedFactor * motionMult;
       const targetSteerAngle = curvatureAngle * 1.5 + microSteerWobble;
 
       stateRef.current.steerAngle += (targetSteerAngle - stateRef.current.steerAngle) * 0.1;
@@ -329,19 +346,19 @@ export const CinematicCanvas: React.FC<CinematicCanvasProps> = ({
       const groundYOffset = (frontAvgH + rearAvgH) / 2;
 
       // Kinematic Body Tilt: Pitch (Accel/Brake Dive) & Roll (Turning Centrifugal Lean)
-      const inertialPitch = -acceleration * 16.0; // Nose dives during braking, squats on accel
+      const inertialPitch = -acceleration * 16.0 * motionMult; // Nose dives during braking, squats on accel
       const targetBodyPitch = terrainPitch + inertialPitch;
       stateRef.current.pitch += (targetBodyPitch - stateRef.current.pitch) * 0.09;
 
-      const inertialRoll = -newVel * steerAngle * 24.0; // Leans outward in turns
+      const inertialRoll = -newVel * steerAngle * 24.0 * motionMult; // Leans outward in turns
       const targetBodyRoll = terrainRoll + inertialRoll;
       stateRef.current.roll += (targetBodyRoll - stateRef.current.roll) * 0.09;
 
       // High-Frequency Powertrain Vibration (Only present when moving, disappears when stopped)
       const isMoving = Math.abs(newVel) > 0.00001;
       const vibFactor = isMoving ? Math.min(1.0, Math.abs(newVel) * 450.0) : 0.0;
-      stateRef.current.vibrationX = (Math.sin(time * 68.0) * 0.12 + Math.cos(time * 95.0) * 0.06) * vibFactor;
-      stateRef.current.vibrationY = (Math.cos(time * 82.0) * 0.14 + Math.sin(time * 115.0) * 0.07) * vibFactor;
+      stateRef.current.vibrationX = (Math.sin(time * 68.0) * 0.12 + Math.cos(time * 95.0) * 0.06) * vibFactor * motionMult;
+      stateRef.current.vibrationY = (Math.cos(time * 82.0) * 0.14 + Math.sin(time * 115.0) * 0.07) * vibFactor * motionMult;
 
       // Adjust rover elevation for terrain suspension height & micro-vibration
       roverPos.y += groundYOffset + stateRef.current.vibrationY;
@@ -390,8 +407,8 @@ export const CinematicCanvas: React.FC<CinematicCanvasProps> = ({
       // 2. Slow orbital drift during long straight sections & stationary browsing
       const speedMag = Math.abs(newVel);
       const idleWeight = 1.0 - Math.min(1.0, speedMag * 200.0);
-      const idleOrbitX = Math.sin(time * 0.18) * 14.0 * idleWeight;
-      const idleOrbitY = Math.cos(time * 0.14) * 5.0 * idleWeight;
+      const idleOrbitX = Math.sin(time * 0.18) * 14.0 * idleWeight * idleMult;
+      const idleOrbitY = Math.cos(time * 0.14) * 5.0 * idleWeight * idleMult;
 
       // 3. Section Checkpoint Dynamic Focal Zoom & Reveal Pullback
       const sectionGates = [0.16, 0.32, 0.50, 0.68, 0.85];
@@ -491,20 +508,33 @@ export const CinematicCanvas: React.FC<CinematicCanvasProps> = ({
         targetPitch = 0.1;
       }
 
-      // --- DRONE OVERHEAD VIEW GSAP OVERRIDES ---
-      const droneProg = stateRef.current.droneProgress;
-      if (droneProg > 0) {
-        const droneCamX = roverPos.x;
-        const droneCamY = -350;
-        const droneCamZ = roverPos.z;
-        const droneYaw = 0;
-        const dronePitch = Math.PI / 2 - 0.03;
+      // CAMERA MODE OVERRIDES (Drone / Follow / Isometric) & Ending Sequence
+      if (activeTheme.cameraMode === 'follow') {
+        targetCamX = roverPos.x - Math.sin(currentYaw) * 110;
+        targetCamY = roverPos.y - 30;
+        targetCamZ = roverPos.z - Math.cos(currentYaw) * 110;
+        targetYaw = currentYaw;
+        targetPitch = 0.08 + mouse.y * 0.05;
+      } else if (activeTheme.cameraMode === 'isometric') {
+        targetCamX = roverPos.x + 90;
+        targetCamY = -120;
+        targetCamZ = roverPos.z - 90;
+        targetPitch = 0.5;
+        targetYaw = -0.75;
+      } else {
+        // Drone Mode (default)
+        targetCamX = roverPos.x;
+        targetCamY = -350;
+        targetCamZ = roverPos.z;
+        targetYaw = 0;
+        targetPitch = Math.PI / 2 - 0.03;
+      }
 
-        targetCamX = targetCamX * (1 - droneProg) + droneCamX * droneProg;
-        targetCamY = targetCamY * (1 - droneProg) + droneCamY * droneProg;
-        targetCamZ = targetCamZ * (1 - droneProg) + droneCamZ * droneProg;
-        targetYaw = targetYaw * (1 - droneProg) + droneYaw * droneProg;
-        targetPitch = targetPitch * (1 - droneProg) + dronePitch * droneProg;
+      // Ending Sequence Smooth Camera Ascension (p >= 0.96)
+      if (p >= 0.96) {
+        const endBlend = (p - 0.96) / 0.04;
+        targetCamY = targetCamY * (1 - endBlend) - 450 * endBlend;
+        targetPitch = targetPitch * (1 - endBlend) + (Math.PI / 2) * endBlend;
       }
 
       // 4. Organic Handheld Motion (Ultra-subtle, non-shaky gimbal/shoulder drift)
@@ -577,6 +607,9 @@ export const CinematicCanvas: React.FC<CinematicCanvasProps> = ({
         camShakeZ = (Math.random() - 0.5) * 10;
       }
 
+      // Extract drone transition progress for use in project() below
+      const droneProg = stateRef.current.droneProgress;
+
       // 3D Projection Utility (Perspective blending smoothly into Orthographic Blueprint view)
       const project = (pt: Point3D) => {
         // Relative translation with camera shake offset
@@ -622,12 +655,15 @@ export const CinematicCanvas: React.FC<CinematicCanvasProps> = ({
       const gridY = 0; // Ground height
       ctx.lineWidth = 0.5;
 
-      // Select theme color accent
-      const accentHue = isKonamiActiveRef.current ? 280 : isAlternateThemeRef.current ? 190 : 0; // Cyber-Purple, Cobalt, or Sleek White
+      // Select theme color accent (uses roadConfig for dynamic road accent colors)
+      const getRgba = (colorStr: string, alpha: number) => {
+        return colorStr.replace(/[\d\.]+\)$/, `${alpha})`);
+      };
+
       const accentColor = (alpha: number) => {
         if (isKonamiActiveRef.current) return `rgba(168, 85, 247, ${alpha})`;
         if (isAlternateThemeRef.current) return `rgba(14, 165, 233, ${alpha})`;
-        return `rgba(255, 255, 255, ${alpha})`;
+        return getRgba(roadConfig.lineColor, alpha);
       };
 
       // Render structural ground lines (Z grid)
@@ -990,9 +1026,22 @@ export const CinematicCanvas: React.FC<CinematicCanvasProps> = ({
         ctx.stroke();
       };
 
-      // 1. CHASSIS (Faceted metallic body)
-      const chassisColor = accentColor(0.85);
-      const chassisFill = 'rgba(12, 12, 12, 0.95)'; // Block out background for solidity
+      // Helper to convert hex color to rgba
+      const hexToRgba = (hex: string, alpha: number) => {
+        let c = hex.replace('#', '');
+        if (c.length === 3) c = c.split('').map(x => x + x).join('');
+        const num = parseInt(c, 16);
+        return `rgba(${(num >> 16) & 255}, ${(num >> 8) & 255}, ${num & 255}, ${alpha})`;
+      };
+
+      // 1. CHASSIS (Faceted metallic body using active Rover Finish)
+      const chassisColor = isKonamiActiveRef.current
+        ? 'rgba(168, 85, 247, 0.9)'
+        : isAlternateThemeRef.current
+          ? 'rgba(14, 165, 233, 0.9)'
+          : roverFinishConfig.specular;
+      const chassisFill = hexToRgba(roverFinishConfig.bodyColor, 0.95);
+      const chassisTopFill = hexToRgba(roverFinishConfig.specular, 0.85);
       const chassisWidth = 8;
       const chassisLength = 12;
       const chassisHeight = 4;
@@ -1011,7 +1060,7 @@ export const CinematicCanvas: React.FC<CinematicCanvasProps> = ({
 
       // Draw Chassis panels
       drawFace([cBottomBL, cBottomBR, cBottomFR, cBottomFL], chassisColor, chassisFill); // Bottom
-      drawFace([cTopBL, cTopBR, cTopFR, cTopFL], chassisColor, 'rgba(25, 25, 25, 0.95)'); // Top plate
+      drawFace([cTopBL, cTopBR, cTopFR, cTopFL], chassisColor, chassisTopFill); // Top plate
       drawFace([cBottomFL, cBottomFR, cTopFR, cTopFL], chassisColor, chassisFill, 1.5); // Front nose
       drawFace([cBottomBL, cBottomBR, cTopBR, cTopBL], chassisColor, chassisFill); // Rear
       drawFace([cBottomFL, cTopFL, cTopBL, cBottomBL], chassisColor, chassisFill); // Left Side
@@ -1029,8 +1078,12 @@ export const CinematicCanvas: React.FC<CinematicCanvasProps> = ({
       const wingR3 = { x: chassisWidth / 2 + 5, y: bottomY - chassisHeight - 1 + panelTilt * 10, z: -4 };
       const wingR4 = { x: chassisWidth / 2, y: bottomY - chassisHeight, z: -3 };
 
-      const panelColor = isKonamiActiveRef.current ? 'rgba(168, 85, 247, 0.9)' : isAlternateThemeRef.current ? 'rgba(14, 165, 233, 0.9)' : 'rgba(255, 255, 255, 0.9)';
-      const panelGridFill = 'rgba(8, 8, 8, 0.95)';
+      const panelColor = isKonamiActiveRef.current
+        ? 'rgba(168, 85, 247, 0.9)'
+        : isAlternateThemeRef.current
+          ? 'rgba(14, 165, 233, 0.9)'
+          : roverFinishConfig.accent;
+      const panelGridFill = hexToRgba(roverFinishConfig.bodyColor, 0.9);
 
       drawFace([wingL1, wingL2, wingL3, wingL4], panelColor, panelGridFill);
       drawFace([wingR1, wingR2, wingR3, wingR4], panelColor, panelGridFill);

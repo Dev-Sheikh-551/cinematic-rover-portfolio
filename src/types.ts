@@ -5,6 +5,15 @@
 
 export type ScrollStage = 'hero' | 'about' | 'skills' | 'projects' | 'timeline' | 'contact' | 'final';
 
+export interface DeveloperNotes {
+  architectureReason?: string;
+  technicalChallenges?: string;
+  optimizations?: string;
+  lessonsLearned?: string;
+  futureImprovements?: string;
+  implementationDetail?: string;
+}
+
 export interface Project {
   id: string;
   title: string;
@@ -19,6 +28,7 @@ export interface Project {
   githubUrl: string;
   modelType: 'lander' | 'satellite' | 'drone' | 'radar';
   imageUrl?: string;
+  developerNotes?: DeveloperNotes;
 }
 
 export interface SkillNode {

@@ -22,12 +22,41 @@
   background: rgba(255, 255, 255, 0.3);
 }
 
-/* Base style resets */
 body {
   background-color: #030303;
   color: #ffffff;
   overflow-x: hidden;
   font-family: var(--font-sans);
+}
+
+/* Accessible Focus Rings & Screen Reader Utilities */
+:focus-visible {
+  outline: 2px solid rgba(16, 185, 129, 0.85);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+.focus\:not-sr-only:focus {
+  position: fixed;
+  top: 1rem;
+  left: 1rem;
+  z-index: 9999;
+  width: auto;
+  height: auto;
+  clip: auto;
+  white-space: normal;
 }
 
 /* Background grid utility */

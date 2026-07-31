@@ -1,41 +1,26 @@
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
+ *
+ * Actionable Command Palette (⌘K)
  */
 
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Terminal, ShieldAlert, Sliders, Volume2, VolumeX, Eye, Sparkles, Navigation, X, Camera } from 'lucide-react';
+import { Terminal, ShieldAlert, Volume2, VolumeX, Eye, Sparkles, Navigation, X, Camera, Palette, Sliders } from 'lucide-react';
 import { sound } from './SoundManager';
+import { themeStore, EnvironmentTheme, CameraMode } from '../themeStore';
 
 interface CommandPaletteProps {
   isOpen: boolean;
   onClose: () => void;
   onNavigate: (sectionId: string) => void;
-  onToggleMute: () => void;
-  isMuted: boolean;
-  onToggleAlternateTheme: () => void;
-  isAlternateTheme: boolean;
-  onToggleKonami: () => void;
-  isKonamiActive: boolean;
-  onOpenSecretPanel: () => void;
-  isDroneView: boolean;
-  onToggleDroneView: () => void;
 }
 
 export const CommandPalette: React.FC<CommandPaletteProps> = ({
   isOpen,
   onClose,
   onNavigate,
-  onToggleMute,
-  isMuted,
-  onToggleAlternateTheme,
-  isAlternateTheme,
-  onToggleKonami,
-  isKonamiActive,
-  onOpenSecretPanel,
-  isDroneView,
-  onToggleDroneView,
 }) => {
   const [filterText, setFilterText] = useState('');
   const inputRef = useRef<HTMLInputElement | null>(null);
@@ -47,97 +32,121 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
     }
   }, [isOpen]);
 
-  // Handle outside click to close
-  const paletteRef = useRef<HTMLDivElement | null>(null);
-  useEffect(() => {
-    const handleOutsideClick = (e: MouseEvent) => {
-      if (paletteRef.current && !paletteRef.current.contains(e.target as Node)) {
-        onClose();
-      }
-    };
-    if (isOpen) {
-      document.addEventListener('mousedown', handleOutsideClick);
-    }
-    return () => document.removeEventListener('mousedown', handleOutsideClick);
-  }, [isOpen, onClose]);
-
   const commands = [
+    // NAVIGATION COMMANDS
     {
-      id: 'nav-hero',
-      title: 'Navigate // HERO_DESTINATION',
+      id: 'go-hero',
+      title: '> go hero (top)',
       category: 'NAVIGATION',
       action: () => onNavigate('hero'),
       icon: <Navigation size={12} />
     },
     {
-      id: 'nav-about',
-      title: 'Navigate // ABOUT_PILOT_STATION',
+      id: 'go-about',
+      title: '> go about',
       category: 'NAVIGATION',
       action: () => onNavigate('about'),
       icon: <Navigation size={12} />
     },
     {
-      id: 'nav-skills',
-      title: 'Navigate // SKILLS_COGNITIVE_ARRAY',
+      id: 'go-skills',
+      title: '> go skills',
       category: 'NAVIGATION',
       action: () => onNavigate('skills'),
       icon: <Navigation size={12} />
     },
     {
-      id: 'nav-projects',
-      title: 'Navigate // EXHIBITION_SHELVES',
+      id: 'go-projects',
+      title: '> go projects',
       category: 'NAVIGATION',
       action: () => onNavigate('projects'),
       icon: <Navigation size={12} />
     },
     {
-      id: 'nav-timeline',
-      title: 'Navigate // JOURNEY_LOG_STATIONS',
+      id: 'go-timeline',
+      title: '> go timeline (journey)',
       category: 'NAVIGATION',
       action: () => onNavigate('timeline'),
       icon: <Navigation size={12} />
     },
     {
-      id: 'nav-contact',
-      title: 'Navigate // HELIOS_COMMAND_TERMINAL',
+      id: 'go-contact',
+      title: '> go contact (bottom)',
       category: 'NAVIGATION',
       action: () => onNavigate('contact'),
       icon: <Navigation size={12} />
     },
+
+    // THEME SWITCH COMMANDS
     {
-      id: 'toggle-mute',
-      title: isMuted ? 'Telemetry System Audio // AUDIO_ENGAGE' : 'Telemetry System Audio // AUDIO_MUTE',
-      category: 'SYSTEM',
-      action: onToggleMute,
-      icon: isMuted ? <Volume2 size={12} /> : <VolumeX size={12} />
-    },
-    {
-      id: 'toggle-theme',
-      title: isAlternateTheme ? 'Core Laser Hue // CHANGE_SLEEK_SLATE' : 'Core Laser Hue // CHANGE_COBALT_GLOW',
+      id: 'theme-midnight',
+      title: '> switch theme midnight',
       category: 'THEME',
-      action: onToggleAlternateTheme,
-      icon: <Eye size={12} />
+      action: () => themeStore.setEnvironment('midnight'),
+      icon: <Palette size={12} />
     },
     {
-      id: 'toggle-drone',
-      title: isDroneView ? 'Deactivate Overhead Drone View // PERSPECTIVE' : 'Activate Overhead Drone View // ORTHOGRAPHIC',
+      id: 'theme-arctic',
+      title: '> switch theme arctic',
+      category: 'THEME',
+      action: () => themeStore.setEnvironment('arctic'),
+      icon: <Palette size={12} />
+    },
+    {
+      id: 'theme-graphite',
+      title: '> switch theme graphite',
+      category: 'THEME',
+      action: () => themeStore.setEnvironment('graphite'),
+      icon: <Palette size={12} />
+    },
+    {
+      id: 'theme-aurora',
+      title: '> switch theme aurora',
+      category: 'THEME',
+      action: () => themeStore.setEnvironment('aurora'),
+      icon: <Palette size={12} />
+    },
+
+    // CAMERA COMMANDS
+    {
+      id: 'cam-drone',
+      title: '> camera drone (overhead default)',
       category: 'CAMERA',
-      action: onToggleDroneView,
+      action: () => themeStore.setCameraMode('drone'),
       icon: <Camera size={12} />
     },
     {
-      id: 'toggle-konami',
-      title: isKonamiActive ? 'Deactivate Cyber Glow Override' : 'Trigger Retro Cyber Glow Override',
-      category: 'SECRET',
-      action: onToggleKonami,
-      icon: <Sparkles size={12} />
+      id: 'cam-follow',
+      title: '> camera follow (behind rover)',
+      category: 'CAMERA',
+      action: () => themeStore.setCameraMode('follow'),
+      icon: <Camera size={12} />
     },
     {
-      id: 'secret-panel',
-      title: 'Unlock Diagnostics Core Panel // VIEW_BLUEPRINTS',
-      category: 'SECRET',
-      action: onOpenSecretPanel,
-      icon: <ShieldAlert size={12} />
+      id: 'cam-isometric',
+      title: '> camera isometric (3D angle)',
+      category: 'CAMERA',
+      action: () => themeStore.setCameraMode('isometric'),
+      icon: <Camera size={12} />
+    },
+
+    // AUDIO & DEVELOPER MODE
+    {
+      id: 'toggle-audio',
+      title: '> toggle audio (mute / unmute)',
+      category: 'SYSTEM',
+      action: () => {
+        const isMuted = sound.isMuted();
+        sound.setMuted(!isMuted);
+      },
+      icon: <Volume2 size={12} />
+    },
+    {
+      id: 'developer-mode',
+      title: '> developer mode (performance stats)',
+      category: 'SYSTEM',
+      action: () => themeStore.toggleDeveloperMode(),
+      icon: <Sliders size={12} />
     },
   ];
 
@@ -158,19 +167,18 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
     <AnimatePresence>
       <div className="fixed inset-0 bg-black/75 backdrop-blur-md z-50 flex items-start justify-center pt-[15vh] px-4">
         <motion.div
-          ref={paletteRef}
           initial={{ opacity: 0, scale: 0.95, y: -20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: -20 }}
           className="w-full max-w-lg border border-white/15 bg-black/95 rounded-2xl overflow-hidden shadow-2xl flex flex-col font-mono text-xs text-white/80"
         >
           {/* Header Input */}
-          <div className="flex items-center gap-2 px-4 py-3 border-b border-white/10 bg-white/2">
-            <Terminal size={14} className="text-white/45 animate-pulse" />
+          <div className="flex items-center gap-2 px-4 py-3 border-b border-white/10 bg-white/5">
+            <Terminal size={14} className="text-emerald-400 animate-pulse" />
             <input
               ref={inputRef}
               type="text"
-              placeholder="SEARCH HELIOS CONTROLS (e.g. Nav, Mute, Secret, Theme)..."
+              placeholder="TYPE COMMAND (e.g. > go projects, > switch theme, > camera follow)..."
               value={filterText}
               onChange={(e) => {
                 setFilterText(e.target.value);
@@ -178,7 +186,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
               }}
               className="flex-1 bg-transparent border-none outline-none text-white text-xs py-0.5 placeholder-white/30"
             />
-            <button onClick={onClose} className="text-white/40 hover:text-white transition-colors">
+            <button onClick={onClose} className="text-white/40 hover:text-white transition-colors cursor-pointer">
               <X size={14} />
             </button>
           </div>
@@ -190,33 +198,31 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                 <button
                   key={cmd.id}
                   onClick={() => handleCommandSelect(cmd)}
-                  className="w-full text-left px-3 py-2.5 hover:bg-white/10 border border-transparent hover:border-white/5 rounded-xl flex items-center justify-between transition-all group"
+                  className="w-full text-left px-3 py-2.5 hover:bg-white/10 border border-transparent hover:border-white/10 rounded-xl flex items-center justify-between transition-all group cursor-pointer"
                 >
                   <div className="flex items-center gap-3">
-                    <span className="text-white/40 group-hover:text-white transition-colors">
+                    <span className="text-white/40 group-hover:text-emerald-400 transition-colors">
                       {cmd.icon}
                     </span>
-                    <span className="group-hover:text-white transition-colors">
+                    <span className="group-hover:text-white transition-colors font-mono">
                       {cmd.title}
                     </span>
                   </div>
-                  <span className="text-[8px] border border-white/10 text-white/40 px-1.5 py-0.5 rounded uppercase">
+                  <span className="text-[9px] text-white/30 group-hover:text-white/60 font-mono">
                     {cmd.category}
                   </span>
                 </button>
               ))
             ) : (
-              <div className="p-6 text-center text-white/30 flex flex-col items-center gap-2">
-                <Sliders size={20} className="text-white/20 animate-bounce" />
-                <span>NO PROTOCOLS COMPLY WITH THE QUERY STRING</span>
+              <div className="p-4 text-center text-white/40 text-xs">
+                No matching system command found
               </div>
             )}
           </div>
 
-          {/* Quick-tips bottom banner */}
-          <div className="h-8 border-t border-white/5 bg-white/1 px-4 flex items-center justify-between text-[8px] text-white/25 select-none">
-            <span>USE MOUSE CURSOR TO CHOOSE OPTIONS</span>
-            <span>PRESS ESCAPE TO DEACTIVATE TERMINAL</span>
+          <div className="px-4 py-2 border-t border-white/10 bg-white/2 text-[9px] text-white/30 flex justify-between">
+            <span>PRESS ESC TO CLOSE</span>
+            <span>ACTIONABLE COMMAND SYSTEM</span>
           </div>
         </motion.div>
       </div>

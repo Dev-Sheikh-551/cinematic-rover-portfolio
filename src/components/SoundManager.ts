@@ -6,14 +6,26 @@
 class SoundManager {
   private ctx: AudioContext | null = null;
   private muted: boolean = true;
-  private volume: number = 0.3;
-  private ambientOsc: OscillatorNode | null = null;
+  private ambientVolume: number = 0.3;
+  private motorVolume: number = 0.2;
+  private sfxVolume: number = 0.4;
+  private ambientPreset: 'silent' | 'minimal-synth' | 'space-ambience' = 'silent';
+
+  private ambientOsc1: OscillatorNode | null = null;
+  private ambientOsc2: OscillatorNode | null = null;
   private ambientGain: GainNode | null = null;
+  private ambientFilter: BiquadFilterNode | null = null;
+
   private motorOsc: OscillatorNode | null = null;
   private motorOsc2: OscillatorNode | null = null;
   private motorGain: GainNode | null = null;
   private motorFilter: BiquadFilterNode | null = null;
   private motorPanner: StereoPannerNode | null = null;
+
+  // Unified volume accessor used by all SFX methods
+  private get volume(): number {
+    return this.sfxVolume;
+  }
 
   init() {
     if (this.ctx) return;
@@ -21,7 +33,7 @@ class SoundManager {
       const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
       if (AudioCtx) {
         this.ctx = new AudioCtx();
-        this.startAmbientHum();
+        this.startAmbientEngine();
         this.startMotorHum();
       }
     } catch (e) {
@@ -29,54 +41,67 @@ class SoundManager {
     }
   }
 
-  setMuted(muted: boolean) {
+  async setMuted(muted: boolean) {
     this.muted = muted;
     this.init();
-    
+
     if (this.ctx && this.ctx.state === 'suspended') {
-      this.ctx.resume();
+      try {
+        await this.ctx.resume();
+      } catch (e) {}
     }
 
-    if (this.ambientGain) {
-      this.ambientGain.gain.setValueAtTime(muted ? 0 : this.volume * 0.04, this.ctx?.currentTime || 0);
-    }
+    this.updateAmbientPreset(this.ambientPreset);
 
-    if (this.motorGain) {
-      this.motorGain.gain.setValueAtTime(0, this.ctx?.currentTime || 0);
+    if (this.motorGain && this.ctx) {
+      this.motorGain.gain.setTargetAtTime(0, this.ctx.currentTime, 0.1);
     }
   }
 
-  setVolume(volume: number) {
-    this.volume = volume;
-    if (this.ambientGain && !this.muted && this.ctx) {
-      this.ambientGain.gain.setValueAtTime(this.volume * 0.04, this.ctx.currentTime);
+  setVolumes(ambient?: number, motor?: number, sfx?: number) {
+    if (ambient !== undefined) this.ambientVolume = ambient;
+    if (motor !== undefined) this.motorVolume = motor;
+    if (sfx !== undefined) this.sfxVolume = sfx;
+    this.updateAmbientPreset(this.ambientPreset);
+  }
+
+  async setAmbientPreset(preset: 'silent' | 'minimal-synth' | 'space-ambience') {
+    this.ambientPreset = preset;
+    if (this.ctx && this.ctx.state === 'suspended') {
+      try { await this.ctx.resume(); } catch (e) {}
     }
+    this.updateAmbientPreset(preset);
   }
 
   isMuted() {
     return this.muted;
   }
 
-  private startAmbientHum() {
+  private async ensureRunning() {
+    if (this.ctx && this.ctx.state === 'suspended') {
+      try { await this.ctx.resume(); } catch (e) {}
+    }
+  }
+
+  private startAmbientEngine() {
     if (!this.ctx) return;
     try {
-      // Sub-bass engine hum (ambient)
       const osc1 = this.ctx.createOscillator();
       const osc2 = this.ctx.createOscillator();
       const filter = this.ctx.createBiquadFilter();
       const gain = this.ctx.createGain();
 
       osc1.type = 'sawtooth';
-      osc1.frequency.setValueAtTime(55, this.ctx.currentTime); // A1
+      osc1.frequency.setValueAtTime(55, this.ctx.currentTime);
 
       osc2.type = 'sine';
-      osc2.frequency.setValueAtTime(110, this.ctx.currentTime); // A2
-      
+      osc2.frequency.setValueAtTime(110, this.ctx.currentTime);
+
       filter.type = 'lowpass';
       filter.frequency.setValueAtTime(120, this.ctx.currentTime);
       filter.Q.setValueAtTime(1, this.ctx.currentTime);
 
-      gain.gain.setValueAtTime(this.muted ? 0 : this.volume * 0.04, this.ctx.currentTime);
+      gain.gain.setValueAtTime(0, this.ctx.currentTime);
 
       osc1.connect(filter);
       osc2.connect(filter);
@@ -86,19 +111,47 @@ class SoundManager {
       osc1.start();
       osc2.start();
 
-      this.ambientOsc = osc1; // Hold references
+      this.ambientOsc1 = osc1;
+      this.ambientOsc2 = osc2;
+      this.ambientFilter = filter;
       this.ambientGain = gain;
     } catch (e) {
-      console.error('Failed to start ambient hum:', e);
+      console.error('Failed to start ambient engine:', e);
+    }
+  }
+
+  private updateAmbientPreset(preset: 'silent' | 'minimal-synth' | 'space-ambience') {
+    if (!this.ctx || !this.ambientGain || !this.ambientFilter || !this.ambientOsc1 || !this.ambientOsc2) return;
+
+    const now = this.ctx.currentTime;
+    if (this.muted || preset === 'silent') {
+      this.ambientGain.gain.setTargetAtTime(0, now, 0.2);
+      return;
+    }
+
+    const targetGain = this.ambientVolume * 0.05;
+
+    if (preset === 'minimal-synth') {
+      this.ambientOsc1.type = 'sawtooth';
+      this.ambientOsc1.frequency.setTargetAtTime(55, now, 0.2);
+      this.ambientOsc2.type = 'sine';
+      this.ambientOsc2.frequency.setTargetAtTime(110, now, 0.2);
+      this.ambientFilter.frequency.setTargetAtTime(140, now, 0.2);
+      this.ambientGain.gain.setTargetAtTime(targetGain, now, 0.3);
+    } else if (preset === 'space-ambience') {
+      this.ambientOsc1.type = 'sine';
+      this.ambientOsc1.frequency.setTargetAtTime(65.41, now, 0.2);
+      this.ambientOsc2.type = 'triangle';
+      this.ambientOsc2.frequency.setTargetAtTime(130.81, now, 0.2);
+      this.ambientFilter.frequency.setTargetAtTime(280, now, 0.2);
+      this.ambientGain.gain.setTargetAtTime(targetGain * 0.8, now, 0.3);
     }
   }
 
   // Soft high-frequency clock tick
-  playTick() {
+  async playTick() {
     if (this.muted || !this.ctx) return;
-    this.init();
-    if (this.ctx.state === 'suspended') this.ctx.resume();
-
+    await this.ensureRunning();
     try {
       const now = this.ctx.currentTime;
       const osc = this.ctx.createOscillator();
@@ -120,18 +173,15 @@ class SoundManager {
   }
 
   // Keyboard click for terminal
-  playKeypress() {
+  async playKeypress() {
     if (this.muted || !this.ctx) return;
-    this.init();
-    if (this.ctx.state === 'suspended') this.ctx.resume();
-
+    await this.ensureRunning();
     try {
       const now = this.ctx.currentTime;
       const osc = this.ctx.createOscillator();
       const gain = this.ctx.createGain();
       const filter = this.ctx.createBiquadFilter();
 
-      // Bandpass filtered short noise-like pop
       osc.type = 'triangle';
       osc.frequency.setValueAtTime(250 + Math.random() * 80, now);
 
@@ -151,11 +201,9 @@ class SoundManager {
   }
 
   // Dual chime for UI actions
-  playConfirm() {
+  async playConfirm() {
     if (this.muted || !this.ctx) return;
-    this.init();
-    if (this.ctx.state === 'suspended') this.ctx.resume();
-
+    await this.ensureRunning();
     try {
       const now = this.ctx.currentTime;
       const osc1 = this.ctx.createOscillator();
@@ -164,12 +212,12 @@ class SoundManager {
       const gain2 = this.ctx.createGain();
 
       osc1.type = 'sine';
-      osc1.frequency.setValueAtTime(587.33, now); // D5
-      osc1.frequency.setValueAtTime(880, now + 0.08); // A5
+      osc1.frequency.setValueAtTime(587.33, now);
+      osc1.frequency.setValueAtTime(880, now + 0.08);
 
       osc2.type = 'sine';
-      osc2.frequency.setValueAtTime(1174.66, now); // D6
-      osc2.frequency.setValueAtTime(1318.51, now + 0.08); // E6
+      osc2.frequency.setValueAtTime(1174.66, now);
+      osc2.frequency.setValueAtTime(1318.51, now + 0.08);
 
       gain1.gain.setValueAtTime(this.volume * 0.15, now);
       gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
@@ -190,11 +238,9 @@ class SoundManager {
   }
 
   // Hologram activation sound
-  playHoloOn() {
+  async playHoloOn() {
     if (this.muted || !this.ctx) return;
-    this.init();
-    if (this.ctx.state === 'suspended') this.ctx.resume();
-
+    await this.ensureRunning();
     try {
       const now = this.ctx.currentTime;
       const osc = this.ctx.createOscillator();
@@ -217,11 +263,9 @@ class SoundManager {
   }
 
   // System error hum
-  playError() {
+  async playError() {
     if (this.muted || !this.ctx) return;
-    this.init();
-    if (this.ctx.state === 'suspended') this.ctx.resume();
-
+    await this.ensureRunning();
     try {
       const now = this.ctx.currentTime;
       const osc1 = this.ctx.createOscillator();
@@ -229,10 +273,10 @@ class SoundManager {
       const gain = this.ctx.createGain();
 
       osc1.type = 'sawtooth';
-      osc1.frequency.setValueAtTime(130, now); // C3
+      osc1.frequency.setValueAtTime(130, now);
 
       osc2.type = 'sawtooth';
-      osc2.frequency.setValueAtTime(135, now); // Detuned C3
+      osc2.frequency.setValueAtTime(135, now);
 
       gain.gain.setValueAtTime(this.volume * 0.18, now);
       gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
@@ -254,15 +298,11 @@ class SoundManager {
   }
 
   // Cybernetic glitch synthesizer noise
-  playGlitch() {
+  async playGlitch() {
     if (this.muted || !this.ctx) return;
-    this.init();
-    if (this.ctx.state === 'suspended') this.ctx.resume();
-
+    await this.ensureRunning();
     try {
       const now = this.ctx.currentTime;
-      
-      // We will create two oscillators with distinct wave shapes to generate a noisy, gritty glitch
       const osc1 = this.ctx.createOscillator();
       const osc2 = this.ctx.createOscillator();
       const gain = this.ctx.createGain();
@@ -270,7 +310,6 @@ class SoundManager {
 
       osc1.type = 'square';
       osc1.frequency.setValueAtTime(180, now);
-      // Rapid frequency modulation to sound unstable
       osc1.frequency.setValueAtTime(80, now + 0.05);
       osc1.frequency.setValueAtTime(950, now + 0.08);
       osc1.frequency.exponentialRampToValueAtTime(120, now + 0.22);
@@ -313,10 +352,10 @@ class SoundManager {
       const gain = this.ctx.createGain();
 
       osc1.type = 'sawtooth';
-      osc1.frequency.setValueAtTime(110, this.ctx.currentTime); // 110Hz base pitch
+      osc1.frequency.setValueAtTime(110, this.ctx.currentTime);
 
       osc2.type = 'triangle';
-      osc2.frequency.setValueAtTime(112.5, this.ctx.currentTime); // Chorus detuning
+      osc2.frequency.setValueAtTime(112.5, this.ctx.currentTime);
 
       filter.type = 'bandpass';
       filter.frequency.setValueAtTime(140, this.ctx.currentTime);
@@ -327,7 +366,7 @@ class SoundManager {
       if (this.ctx.createStereoPanner) {
         const panner = this.ctx.createStereoPanner();
         panner.pan.setValueAtTime(0, this.ctx.currentTime);
-        
+
         osc1.connect(filter);
         osc2.connect(filter);
         filter.connect(gain);
@@ -360,39 +399,29 @@ class SoundManager {
 
     const now = this.ctx.currentTime;
 
-    // Scale raw progress-per-frame velocity — lowered multiplier so gentle scrolling triggers audio
     const speedFactor = Math.min(1.0, Math.abs(velocity) * 18);
     const accelFactor = Math.min(1.0, Math.abs(acceleration) * 60);
 
-    // Subtle volume scaling that ramps up when moving
     let targetVolume = 0;
     if (speedFactor > 0.01) {
-      targetVolume = this.volume * 0.28 * (speedFactor * 0.65 + accelFactor * 0.35);
-    } else {
-      targetVolume = 0; // Absolute silence when completely stationary
+      targetVolume = this.motorVolume * 0.28 * (speedFactor * 0.65 + accelFactor * 0.35);
     }
 
-    // Revving mechanical pitch: frequency shifts higher (e.g., from 110Hz to 240Hz)
     const baseFreq = 110;
     const targetFreq1 = baseFreq + speedFactor * 120 + accelFactor * 30;
     const targetFreq2 = (baseFreq + 2.5) + speedFactor * 123 + accelFactor * 30;
-
-    // Open up bandpass filter range to let mechanical high-frequency rumble pass as speed increases
     const filterFreq = 140 + speedFactor * 350 + accelFactor * 100;
-
-    // Spatialization: Pan shifts left to right as the rover drives across the screen coordinates
     const targetPan = -0.8 + scrollProgress * 1.6;
 
-    // Apply with robust Web Audio API scheduling
     this.motorGain.gain.setTargetAtTime(targetVolume, now, 0.15);
-    
+
     if (this.motorOsc) {
       this.motorOsc.frequency.setTargetAtTime(targetFreq1, now, 0.15);
     }
     if (this.motorOsc2) {
       this.motorOsc2.frequency.setTargetAtTime(targetFreq2, now, 0.15);
     }
-    
+
     this.motorFilter.frequency.setTargetAtTime(filterFreq, now, 0.2);
 
     if (this.motorPanner) {

@@ -13,6 +13,8 @@ import { motion } from 'motion/react';
 interface LiquidGlassProps {
   children: React.ReactNode;
   className?: string;
+  contentClassName?: string;
+  contentStyle?: React.CSSProperties;
   /** Strength of the displacement/refraction (default 8) */
   distortion?: number;
   /** Blur behind the glass in px (default 6 for high optical transparency) */
@@ -39,11 +41,13 @@ interface LiquidGlassProps {
 export const LiquidGlass: React.FC<LiquidGlassProps> = ({
   children,
   className = '',
+  contentClassName = '',
+  contentStyle = {},
   distortion = 8,
   blur = 6,
   radius = '1.25rem',
   tint = 0.03,
-  style,
+  style = {},
   interactive = true,
 }) => {
   const uid = useId().replace(/:/g, '');
@@ -201,7 +205,7 @@ export const LiquidGlass: React.FC<LiquidGlassProps> = ({
       />
 
       {/* ── Card Content ── */}
-      <div style={{ position: 'relative', zIndex: 5 }}>
+      <div className={contentClassName || ''} style={{ position: 'relative', zIndex: 5, ...(contentStyle || {}) }}>
         {children}
       </div>
     </motion.div>

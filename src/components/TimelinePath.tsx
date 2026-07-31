@@ -10,10 +10,9 @@
 
 import React, { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Calendar, Shield, ArrowRight, Sparkles, BookOpen, Layers, Award, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Calendar, Shield, ArrowRight, Sparkles, ChevronLeft, ChevronRight } from 'lucide-react';
 import { sound } from './SoundManager';
 import { TimelineEvent } from '../types';
-import { TIMELINE_OFFSETS } from '../constants';
 import { LiquidGlass } from './LiquidGlass';
 
 const CHRONO_CHAPTERS: (TimelineEvent & {
@@ -71,51 +70,22 @@ const CHRONO_CHAPTERS: (TimelineEvent & {
   ];
 
 interface TimelinePathProps {
-  scrollProgress: number;
+  scrollProgress?: number;
   onMilestoneReached?: (index: number) => void;
 }
 
-export const TimelinePath: React.FC<TimelinePathProps> = ({ scrollProgress, onMilestoneReached }) => {
+export const TimelinePath: React.FC<TimelinePathProps> = ({ onMilestoneReached }) => {
   const [chapterIdx, setChapterIdx] = useState<number>(0);
-  const activeChapterRef = useRef<number>(0);
-  const manualLockUntilRef = useRef<number>(0);
   const callbackRef = useRef(onMilestoneReached);
 
   useEffect(() => {
     callbackRef.current = onMilestoneReached;
   }, [onMilestoneReached]);
 
-  const timelineStart = TIMELINE_OFFSETS.timeline.start;
-  const timelineEnd = TIMELINE_OFFSETS.timeline.end;
-
-  // Normalized scroll progress (0 to 1)
-  const lineProgress = Math.max(0, Math.min(1, (scrollProgress - timelineStart) / (timelineEnd - timelineStart)));
-
-  // Calculate active stage from scroll progress (ignored if user recently clicked a card manually)
-  useEffect(() => {
-    if (scrollProgress < timelineStart || scrollProgress > timelineEnd) return;
-    if (Date.now() < manualLockUntilRef.current) return;
-
-    const total = CHRONO_CHAPTERS.length;
-    const rawIndex = lineProgress * total;
-    const index = Math.min(total - 1, Math.floor(rawIndex));
-
-    if (index !== activeChapterRef.current) {
-      activeChapterRef.current = index;
-      setChapterIdx(index);
-      sound.playConfirm();
-      if (callbackRef.current) {
-        callbackRef.current(index);
-      }
-    }
-  }, [scrollProgress, lineProgress, timelineStart, timelineEnd]);
-
   const activeChapter = CHRONO_CHAPTERS[chapterIdx];
 
   const handleSelectChapter = (index: number) => {
-    manualLockUntilRef.current = Date.now() + 6000; // Lock auto-switch for 6s after manual click
     setChapterIdx(index);
-    activeChapterRef.current = index;
     sound.playConfirm();
     if (callbackRef.current) {
       callbackRef.current(index);
@@ -316,7 +286,7 @@ export const TimelinePath: React.FC<TimelinePathProps> = ({ scrollProgress, onMi
             </div>
 
             <div className="flex items-center gap-1 text-white/40 text-[9px]">
-              <span>SCROLL OR USE CONTROLS</span>
+              <span>USE CONTROLS TO NAVIGATE</span>
               <ArrowRight size={9} />
             </div>
           </div>

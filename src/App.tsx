@@ -20,17 +20,18 @@ const InertiaPlugin = {
 };
 
 gsap.registerPlugin(ScrollTrigger, InertiaPlugin);
-import { 
+import {
+  Sparkles, 
+  ArrowDown, 
   Volume2, 
   VolumeX, 
-  Terminal as TerminalIcon, 
   Compass, 
-  Layers, 
-  ArrowDown, 
+  Command, 
   Info, 
   Cpu, 
   ShieldAlert, 
-  Maximize2 
+  Maximize2,
+  FileText
 } from 'lucide-react';
 
 import { sound } from './components/SoundManager';
@@ -42,7 +43,14 @@ import { TimelinePath } from './components/TimelinePath';
 import { ContactTerminal } from './components/ContactTerminal';
 import { CommandPalette } from './components/CommandPalette';
 import { SecretDeveloperPanel } from './components/SecretDeveloperPanel';
-import { TimelineEvent } from './types';
+import { ThemeStudio } from './components/ThemeStudio';
+import { AchievementToasts } from './components/AchievementToasts';
+import { ProjectShowcaseModal } from './components/ProjectShowcaseModal';
+import { EndingSequence } from './components/EndingSequence';
+import { LoadingScreen } from './components/LoadingScreen';
+import { ResumeModal } from './components/ResumeModal';
+import { themeStore } from './themeStore';
+import { TimelineEvent, Project } from './types';
 import { TIMELINE_OFFSETS } from './constants';
 
 const TIMELINE_EVENTS: TimelineEvent[] = [
@@ -84,7 +92,17 @@ export default function App() {
   const [isKonamiActive, setIsKonamiActive] = useState(false);
   const [isPaletteOpen, setIsPaletteOpen] = useState(false);
   const [isSecretPanelOpen, setIsSecretPanelOpen] = useState(false);
+  const [isResumeOpen, setIsResumeOpen] = useState(false);
   const [isDroneView, setIsDroneView] = useState(true);
+  const [inspectedProject, setInspectedProject] = useState<Project | null>(null);
+
+  // Sync developerMode state from themeStore
+  useEffect(() => {
+    const unsubscribe = themeStore.subscribe(() => {
+      setIsSecretPanelOpen(themeStore.getState().developerMode);
+    });
+    return unsubscribe;
+  }, []);
 
   // Always start at the very top — prevents browser restoring previous scroll position
   useLayoutEffect(() => {
@@ -102,11 +120,11 @@ export default function App() {
       "color: #ffffff; background: #111111; padding: 10px 14px; border-radius: 6px; font-weight: bold; font-family: monospace; font-size: 13px;"
     );
     console.log(
-      "%cFrontend Engineer · React · Next.js · TypeScript\n" +
+      "%c👋 Welcome, fellow developer. Thanks for taking the time to explore the code and experience.\n" +
       "  ⌘K  — Open command palette\n" +
-      "  Type 'about' — Open developer panel\n" +
-      "  Konami code — Toggle accent theme",
-      "color: rgba(255,255,255,0.6); font-family: monospace; font-size: 11px; line-height: 1.7;"
+      "  Ctrl+Shift+D — Toggle developer overlay & telemetry\n" +
+      "  Type 'about' — Toggle developer overlay",
+      "color: rgba(255,255,255,0.7); font-family: monospace; font-size: 11px; line-height: 1.7;"
     );
 
     const notificationTimer = setTimeout(() => {
@@ -133,20 +151,24 @@ export default function App() {
       const progress = tl.progress();
       setScrollProgress(progress);
 
+      let currentSec = 'hero';
       // Map progress to active layout section name using centralized TIMELINE_OFFSETS
       if (progress < TIMELINE_OFFSETS.about.start) {
-        setActiveSection('hero');
+        currentSec = 'hero';
       } else if (progress >= TIMELINE_OFFSETS.about.start && progress < TIMELINE_OFFSETS.skills.start) {
-        setActiveSection('about');
+        currentSec = 'about';
       } else if (progress >= TIMELINE_OFFSETS.skills.start && progress < TIMELINE_OFFSETS.projects.start) {
-        setActiveSection('skills');
+        currentSec = 'skills';
       } else if (progress >= TIMELINE_OFFSETS.projects.start && progress < TIMELINE_OFFSETS.timeline.start) {
-        setActiveSection('projects');
+        currentSec = 'projects';
       } else if (progress >= TIMELINE_OFFSETS.timeline.start && progress < TIMELINE_OFFSETS.contact.start) {
-        setActiveSection('timeline');
+        currentSec = 'timeline';
       } else {
-        setActiveSection('contact');
+        currentSec = 'contact';
       }
+
+      setActiveSection(currentSec);
+      themeStore.trackVisitedSection(currentSec);
     });
 
     // Set initial states for all content wrappers to avoid layout flashes
@@ -160,134 +182,103 @@ export default function App() {
     // Anchor the timeline total duration to exactly 1.0
     tl.to({}, { duration: 1.0 }, 0);
 
-    const duration = 0.04;
-
-    // Hero content fade out & translate up with 3D rotation
-    tl.fromTo("#hero-content",
-      { autoAlpha: 1, y: 0, rotateX: 0, scale: 1, transformPerspective: 1200, transformOrigin: "50% 50%" },
-      { autoAlpha: 0, y: -120, rotateX: -12, scale: 0.94, duration: TIMELINE_OFFSETS.hero.end, ease: "power2.inOut" },
-      0
-    );
-
-    // About content entrance and exit
-    tl.fromTo("#about-content",
-      { autoAlpha: 0, y: 120, rotateX: 12, scale: 0.94, transformPerspective: 1200, transformOrigin: "50% 100%" },
-      { autoAlpha: 1, y: 0, rotateX: 0, scale: 1, duration, ease: "power2.out" },
-      TIMELINE_OFFSETS.about.start - duration
-    );
-    tl.fromTo("#about-content .scanner-line",
-      { top: "0%", opacity: 0 },
-      {
-        keyframes: [
-          { top: "20%", opacity: 0.8, duration: 0.25 },
-          { top: "80%", opacity: 0.8, duration: 0.5 },
-          { top: "100%", opacity: 0, duration: 0.25 }
-        ],
-        duration,
-        ease: "power1.inOut"
-      },
-      TIMELINE_OFFSETS.about.start - duration
-    );
-    tl.to("#about-content",
-      { autoAlpha: 0, y: -120, rotateX: -12, scale: 0.94, duration, ease: "power2.in", transformOrigin: "50% 0%" },
-      TIMELINE_OFFSETS.about.end
-    );
-
-    // Skills content entrance and exit
-    tl.fromTo("#skills-content",
-      { autoAlpha: 0, y: 120, rotateX: 12, scale: 0.94, transformPerspective: 1200, transformOrigin: "50% 100%" },
-      { autoAlpha: 1, y: 0, rotateX: 0, scale: 1, duration, ease: "power2.out" },
-      TIMELINE_OFFSETS.skills.start - duration
-    );
-    tl.fromTo("#skills-content .scanner-line",
-      { top: "0%", opacity: 0 },
-      {
-        keyframes: [
-          { top: "20%", opacity: 0.8, duration: 0.25 },
-          { top: "80%", opacity: 0.8, duration: 0.5 },
-          { top: "100%", opacity: 0, duration: 0.25 }
-        ],
-        duration,
-        ease: "power1.inOut"
-      },
-      TIMELINE_OFFSETS.skills.start - duration
-    );
-    tl.to("#skills-content",
-      { autoAlpha: 0, y: -120, rotateX: -12, scale: 0.94, duration, ease: "power2.in", transformOrigin: "50% 0%" },
-      TIMELINE_OFFSETS.skills.end
-    );
-
-    // Projects content entrance and exit
-    tl.fromTo("#projects-content",
-      { autoAlpha: 0, y: 120, rotateX: 12, scale: 0.94, transformPerspective: 1200, transformOrigin: "50% 100%" },
-      { autoAlpha: 1, y: 0, rotateX: 0, scale: 1, duration, ease: "power2.out" },
-      TIMELINE_OFFSETS.projects.start - duration
-    );
-    tl.fromTo("#projects-content .scanner-line",
-      { top: "0%", opacity: 0 },
-      {
-        keyframes: [
-          { top: "20%", opacity: 0.8, duration: 0.25 },
-          { top: "80%", opacity: 0.8, duration: 0.5 },
-          { top: "100%", opacity: 0, duration: 0.25 }
-        ],
-        duration,
-        ease: "power1.inOut"
-      },
-      TIMELINE_OFFSETS.projects.start - duration
-    );
-    tl.to("#projects-content",
-      { autoAlpha: 0, y: -120, rotateX: -12, scale: 0.94, duration, ease: "power2.in", transformOrigin: "50% 0%" },
-      TIMELINE_OFFSETS.projects.end
-    );
-
-    // Timeline content entrance and exit
-    tl.fromTo("#timeline-content",
-      { autoAlpha: 0, y: 120, rotateX: 12, scale: 0.94, transformPerspective: 1200, transformOrigin: "50% 100%" },
-      { autoAlpha: 1, y: 0, rotateX: 0, scale: 1, duration, ease: "power2.out" },
-      TIMELINE_OFFSETS.timeline.start - duration
-    );
-    tl.fromTo("#timeline-content .scanner-line",
-      { top: "0%", opacity: 0 },
-      {
-        keyframes: [
-          { top: "20%", opacity: 0.8, duration: 0.25 },
-          { top: "80%", opacity: 0.8, duration: 0.5 },
-          { top: "100%", opacity: 0, duration: 0.25 }
-        ],
-        duration,
-        ease: "power1.inOut"
-      },
-      TIMELINE_OFFSETS.timeline.start - duration
-    );
-    tl.to("#timeline-content",
-      { autoAlpha: 0, y: -120, rotateX: -12, scale: 0.94, duration, ease: "power2.in", transformOrigin: "50% 0%" },
-      TIMELINE_OFFSETS.timeline.end
-    );
-
-    // Contact content entrance
-    tl.fromTo("#contact-content",
-      { autoAlpha: 0, y: 120, rotateX: 12, scale: 0.94, transformPerspective: 1200, transformOrigin: "50% 100%" },
-      { autoAlpha: 1, y: 0, rotateX: 0, scale: 1, duration, ease: "power2.out" },
-      TIMELINE_OFFSETS.contact.start - duration
-    );
-    tl.fromTo("#contact-content .scanner-line",
-      { top: "0%", opacity: 0 },
-      {
-        keyframes: [
-          { top: "20%", opacity: 0.8, duration: 0.25 },
-          { top: "80%", opacity: 0.8, duration: 0.5 },
-          { top: "100%", opacity: 0, duration: 0.25 }
-        ],
-        duration,
-        ease: "power1.inOut"
-      },
-      TIMELINE_OFFSETS.contact.start - duration
-    );
-
     return () => {
       tl.kill();
     };
+  }, []);
+
+  // 2b. Responsive section entrance / exit animations via gsap.matchMedia()
+  //     Each breakpoint gets its own scrub speed and exit-start timing so sections
+  //     stay fully visible for most of their scroll budget on every device.
+  useEffect(() => {
+    const mm = gsap.matchMedia();
+
+    // Helper: entrance + scanner-line + exit for one section
+    const addSection = (
+      tl: gsap.core.Timeline,
+      id: string,
+      sectionStart: number,
+      sectionEnd: number | null,
+      inDur: number,
+      outDur: number,
+      exitDelay: number = 1.0,
+    ) => {
+      tl.fromTo(id,
+        { autoAlpha: 0, y: 120, rotateX: 12, scale: 0.94, transformPerspective: 1200, transformOrigin: "50% 100%" },
+        { autoAlpha: 1, y: 0, rotateX: 0, scale: 1, duration: inDur, ease: "power2.out" },
+        sectionStart - inDur
+      );
+      tl.fromTo(`${id} .scanner-line`,
+        { top: "0%", opacity: 0 },
+        {
+          keyframes: [
+            { top: "20%", opacity: 0.8, duration: 0.25 },
+            { top: "80%", opacity: 0.8, duration: 0.5 },
+            { top: "100%", opacity: 0, duration: 0.25 }
+          ],
+          duration: inDur,
+          ease: "power1.inOut"
+        },
+        sectionStart - inDur
+      );
+      if (sectionEnd !== null) {
+        const exitStart = sectionStart + (sectionEnd - sectionStart) * exitDelay;
+        tl.to(id,
+          { autoAlpha: 0, y: -120, rotateX: -12, scale: 0.94, duration: outDur, ease: "power2.in", transformOrigin: "50% 0%" },
+          exitStart
+        );
+      }
+    };
+
+    // ── DESKTOP ≥1024px ── original cinematic feel, exit at section boundary
+    mm.add("(min-width: 1024px)", () => {
+      const tl = gsap.timeline({ scrollTrigger: { trigger: "body", start: "top top", end: "bottom bottom", scrub: 2.5 } });
+      tl.to({}, { duration: 1.0 }, 0);
+      tl.fromTo("#hero-content",
+        { autoAlpha: 1, y: 0, rotateX: 0, scale: 1, transformPerspective: 1200, transformOrigin: "50% 50%" },
+        { autoAlpha: 0, y: -120, rotateX: -12, scale: 0.94, duration: TIMELINE_OFFSETS.hero.end, ease: "power2.inOut" }, 0
+      );
+      addSection(tl, "#about-content",    TIMELINE_OFFSETS.about.start,    TIMELINE_OFFSETS.about.end,    0.04, 0.04, 1.0);
+      addSection(tl, "#skills-content",   TIMELINE_OFFSETS.skills.start,   TIMELINE_OFFSETS.skills.end,   0.04, 0.04, 1.0);
+      addSection(tl, "#projects-content", TIMELINE_OFFSETS.projects.start, TIMELINE_OFFSETS.projects.end, 0.04, 0.04, 1.0);
+      addSection(tl, "#timeline-content", TIMELINE_OFFSETS.timeline.start, TIMELINE_OFFSETS.timeline.end, 0.04, 0.04, 1.0);
+      addSection(tl, "#contact-content",  TIMELINE_OFFSETS.contact.start,  null,                          0.04, 0.04);
+      return () => tl.kill();
+    });
+
+    // ── TABLET 768–1023px ── scrub 1.8, exit after 82% of section
+    mm.add("(min-width: 768px) and (max-width: 1023px)", () => {
+      const tl = gsap.timeline({ scrollTrigger: { trigger: "body", start: "top top", end: "bottom bottom", scrub: 1.8 } });
+      tl.to({}, { duration: 1.0 }, 0);
+      tl.fromTo("#hero-content",
+        { autoAlpha: 1, y: 0, rotateX: 0, scale: 1, transformPerspective: 1200, transformOrigin: "50% 50%" },
+        { autoAlpha: 0, y: -80, rotateX: -8, scale: 0.96, duration: TIMELINE_OFFSETS.hero.end, ease: "power2.inOut" }, 0
+      );
+      addSection(tl, "#about-content",    TIMELINE_OFFSETS.about.start,    TIMELINE_OFFSETS.about.end,    0.035, 0.032, 0.82);
+      addSection(tl, "#skills-content",   TIMELINE_OFFSETS.skills.start,   TIMELINE_OFFSETS.skills.end,   0.035, 0.032, 0.82);
+      addSection(tl, "#projects-content", TIMELINE_OFFSETS.projects.start, TIMELINE_OFFSETS.projects.end, 0.035, 0.032, 0.82);
+      addSection(tl, "#timeline-content", TIMELINE_OFFSETS.timeline.start, TIMELINE_OFFSETS.timeline.end, 0.035, 0.032, 0.82);
+      addSection(tl, "#contact-content",  TIMELINE_OFFSETS.contact.start,  null,                          0.035, 0.032);
+      return () => tl.kill();
+    });
+
+    // ── MOBILE <768px ── scrub 1.2, exit after 80% of section, reduced y/rotation
+    mm.add("(max-width: 767px)", () => {
+      const tl = gsap.timeline({ scrollTrigger: { trigger: "body", start: "top top", end: "bottom bottom", scrub: 1.2 } });
+      tl.to({}, { duration: 1.0 }, 0);
+      tl.fromTo("#hero-content",
+        { autoAlpha: 1, y: 0, rotateX: 0, scale: 1, transformPerspective: 800, transformOrigin: "50% 50%" },
+        { autoAlpha: 0, y: -60, rotateX: -6, scale: 0.97, duration: TIMELINE_OFFSETS.hero.end, ease: "power2.inOut" }, 0
+      );
+      addSection(tl, "#about-content",    TIMELINE_OFFSETS.about.start,    TIMELINE_OFFSETS.about.end,    0.03, 0.028, 0.80);
+      addSection(tl, "#skills-content",   TIMELINE_OFFSETS.skills.start,   TIMELINE_OFFSETS.skills.end,   0.03, 0.028, 0.80);
+      addSection(tl, "#projects-content", TIMELINE_OFFSETS.projects.start, TIMELINE_OFFSETS.projects.end, 0.03, 0.028, 0.80);
+      addSection(tl, "#timeline-content", TIMELINE_OFFSETS.timeline.start, TIMELINE_OFFSETS.timeline.end, 0.03, 0.028, 0.80);
+      addSection(tl, "#contact-content",  TIMELINE_OFFSETS.contact.start,  null,                          0.03, 0.028);
+      return () => tl.kill();
+    });
+
+    return () => mm.revert();
   }, []);
 
   // Track activeSection in ref for event listener closures
@@ -380,6 +371,14 @@ export default function App() {
         return;
       }
 
+      // Handle Ctrl+Shift+D for Developer Mode telemetry overlay
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'd') {
+        e.preventDefault();
+        themeStore.toggleDeveloperMode();
+        sound.playConfirm();
+        return;
+      }
+
       if (isInput) return;
 
       // --- KONAMI CODE BUFFER ---
@@ -394,14 +393,9 @@ export default function App() {
         setIsKonamiActive(prev => !prev);
         sound.playConfirm();
         konamiBufferRef.current = []; // clear
-        
-        console.log(
-          "%cOVERDRIVE CAPACITOR CHANNELS ENGAGED: PURPLE_CYBER_FLOW",
-          "color: #a855f7; font-weight: bold; font-family: monospace; font-size: 12px;"
-        );
       }
 
-      // --- "ABOUT" TYPING DETECTION ---
+      // --- "ABOUT" TYPING DETECTION — opens Developer Overlay ---
       inputBufferRef.current.push(e.key.toLowerCase());
       if (inputBufferRef.current.length > 5) {
         inputBufferRef.current.shift();
@@ -409,9 +403,11 @@ export default function App() {
 
       const typedWord = inputBufferRef.current.join('');
       if (typedWord === 'about') {
-        setIsSecretPanelOpen(true);
+        themeStore.toggleDeveloperMode();
+        // Mirror state so the SecretDeveloperPanel opens immediately
+        setIsSecretPanelOpen(prev => !prev);
         sound.playConfirm();
-        inputBufferRef.current = []; // clear
+        inputBufferRef.current = [];
       }
     };
 
@@ -419,21 +415,17 @@ export default function App() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  // 4. Interactive Theme Toggle (clicking Logo 10 times)
+  // 4. Interactive Theme Toggle (clicking Logo 3 times)
   const handleLogoClick = () => {
     const nextClicks = logoClicks + 1;
     setLogoClicks(nextClicks);
     sound.playTick();
 
-    if (nextClicks >= 10) {
+    if (nextClicks >= 3) {
       sound.playConfirm();
-      setIsAlternateTheme(prev => !prev);
+      themeStore.unlockAchievement('Curious Mind');
+      themeStore.setEnvironment(themeStore.getState().environment === 'aurora' ? 'midnight' : 'aurora');
       setLogoClicks(0); // Reset
-
-      console.log(
-        `%cLASER_BEAM GRID SWAP: ${!isAlternateTheme ? 'COBALT_GLOW' : 'SLEEK_SLATE'}`,
-        "color: #0ea5e9; font-weight: bold; font-family: monospace;"
-      );
     }
   };
 
@@ -471,6 +463,17 @@ export default function App() {
   return (
     <div className="relative min-h-screen bg-[#030303] text-white selection:bg-white selection:text-black overflow-x-hidden">
       
+      {/* SKIP TO CONTENT LINK (ACCESSIBILITY) */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only px-4 py-2.5 bg-emerald-500 text-black font-mono text-xs font-bold rounded-xl shadow-2xl border border-white/40 focus:outline-none"
+      >
+        Skip to main content
+      </a>
+
+      {/* PHASE 3 — PREMIUM LOADING SCREEN */}
+      <LoadingScreen />
+
       {/* 3D FIXED CINEMATIC CANVAS BACKDROP */}
       <div id="canvas-fixed-container" className="fixed inset-0 w-full h-full pointer-events-none z-0 overflow-hidden">
         <CinematicCanvas
@@ -507,15 +510,25 @@ export default function App() {
             <span className={`font-sans text-[12px] font-semibold tracking-wide transition-all duration-300 ${
               isKonamiActive ? 'text-purple-300' : isAlternateTheme ? 'text-sky-300' : 'text-white/90 group-hover:text-white'
             }`}>Sheikh Touray</span>
-            {logoClicks > 0 && logoClicks < 10 && (
-              <span className="font-mono text-[8px] text-white/25 mt-0.5">{logoClicks} / 10</span>
+            {logoClicks > 0 && logoClicks < 3 && (
+              <span className="font-mono text-[8px] text-white/25 mt-0.5">{logoClicks} / 3</span>
             )}
           </div>
         </div>
 
         {/* CONTROLS AREA (Mute / HUD trigger) */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
           
+          {/* Resume Viewer Trigger */}
+          <button
+            onClick={() => { setIsResumeOpen(true); sound.playConfirm(); }}
+            className="flex items-center gap-1.5 px-3 py-1.5 border border-emerald-500/30 hover:border-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 rounded-full font-mono text-[11px] text-emerald-300 transition-all cursor-pointer"
+            title="View Curriculum Vitae"
+          >
+            <FileText size={12} className="text-emerald-400" />
+            <span>Resume</span>
+          </button>
+
           {/* Command palette trigger */}
           <button 
             onClick={() => setIsPaletteOpen(true)}
@@ -684,7 +697,7 @@ export default function App() {
       </AnimatePresence>
 
       {/* MAIN COGNITIVE FLOW - VERTICALLY STACKED CONTENT WINDOWS */}
-      <main className="relative z-10">
+      <main id="main-content" tabIndex={-1} role="main" className="relative z-10 focus:outline-none">
         
         {/* SECTION 1: HERO */}
         <section id="hero-anchor" className="min-h-screen flex flex-col items-center justify-center text-center px-4 relative">
@@ -704,7 +717,10 @@ export default function App() {
         <section id="about-anchor" className="relative min-h-screen flex flex-col justify-center py-12 overflow-hidden">
           <div id="about-content" className="w-full relative">
             <div className="scanner-line absolute left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 pointer-events-none z-30" />
-            <AboutHologram scrollProgress={scrollProgress} />
+            <AboutHologram
+              scrollProgress={scrollProgress}
+              onOpenResume={() => setIsResumeOpen(true)}
+            />
           </div>
         </section>
 
@@ -720,7 +736,13 @@ export default function App() {
         <section id="projects-anchor" className="relative min-h-screen flex flex-col justify-center py-12 overflow-hidden">
           <div id="projects-content" className="w-full relative">
             <div className="scanner-line absolute left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 pointer-events-none z-30" />
-            <ProjectsExhibition scrollProgress={scrollProgress} />
+            <ProjectsExhibition
+              scrollProgress={scrollProgress}
+              onInspectProject={(proj) => {
+                setInspectedProject(proj);
+                themeStore.trackInspectedProject(proj.id, 4);
+              }}
+            />
           </div>
         </section>
 
@@ -777,26 +799,38 @@ export default function App() {
         
       </main>
 
-      {/* EASTER EGGS / HUD UTILITY POPUPS */}
+      {/* PHASE 2 COMPONENTS & HUD POPUPS */}
+      <ThemeStudio />
+
+      <AchievementToasts />
+
+      <EndingSequence scrollProgress={scrollProgress} />
+
+      <ProjectShowcaseModal
+        project={inspectedProject}
+        onClose={() => setInspectedProject(null)}
+      />
+
       <CommandPalette
         isOpen={isPaletteOpen}
         onClose={() => setIsPaletteOpen(false)}
         onNavigate={navigateToSection}
-        onToggleMute={toggleMute}
-        isMuted={isMuted}
-        onToggleAlternateTheme={() => setIsAlternateTheme(!isAlternateTheme)}
-        isAlternateTheme={isAlternateTheme}
-        onToggleKonami={() => setIsKonamiActive(!isKonamiActive)}
-        isKonamiActive={isKonamiActive}
-        onOpenSecretPanel={() => setIsSecretPanelOpen(true)}
-        isDroneView={isDroneView}
-        onToggleDroneView={() => setIsDroneView(!isDroneView)}
       />
 
       <SecretDeveloperPanel
         isOpen={isSecretPanelOpen}
-        onClose={() => setIsSecretPanelOpen(false)}
+        onClose={() => {
+          setIsSecretPanelOpen(false);
+          if (themeStore.getState().developerMode) {
+            themeStore.toggleDeveloperMode();
+          }
+        }}
         scrollProgress={scrollProgress}
+      />
+
+      <ResumeModal
+        isOpen={isResumeOpen}
+        onClose={() => setIsResumeOpen(false)}
       />
 
     </div>
