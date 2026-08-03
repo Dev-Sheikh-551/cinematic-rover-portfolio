@@ -488,7 +488,10 @@ export default function App() {
       </div>
 
       {/* FIXED HEADER (Glass bar) */}
-      <header className="fixed top-0 left-0 right-0 h-16 border-b border-white/5 bg-black/45 backdrop-blur-md z-40 px-6 flex items-center justify-between">
+      <header
+        className="fixed top-0 left-0 right-0 h-16 border-b border-white/8 bg-black/50 backdrop-blur-2xl z-40 px-6 flex items-center justify-between"
+        style={{ boxShadow: 'inset 0 -1px 0 rgba(255,255,255,0.06), 0 1px 0 rgba(0,0,0,0.4)' }}
+      >
         
         {/* LOGO — STT monogram (10 clicks alternate theme) */}
         <div 
@@ -496,10 +499,10 @@ export default function App() {
           className="flex items-center gap-3 cursor-pointer group select-none"
         >
           {/* Minimal monogram mark */}
-          <div className={`relative w-8 h-8 flex items-center justify-center rounded-lg border transition-all duration-300 ${
-            isKonamiActive ? 'border-purple-500/60 bg-purple-500/10' :
-            isAlternateTheme ? 'border-sky-400/60 bg-sky-400/10' :
-            'border-white/20 bg-white/5 group-hover:border-white/50 group-hover:bg-white/10'
+          <div className={`relative w-8 h-8 flex items-center justify-center rounded-xl border transition-all duration-300 shadow-sm ${
+            isKonamiActive ? 'border-purple-500/60 bg-purple-500/10 shadow-purple-500/20' :
+            isAlternateTheme ? 'border-sky-400/60 bg-sky-400/10 shadow-sky-400/20' :
+            'border-white/20 bg-white/6 group-hover:border-white/50 group-hover:bg-white/12 group-hover:shadow-white/10'
           }`}>
             <span className={`font-sans text-[11px] font-bold tracking-tight leading-none ${
               isKonamiActive ? 'text-purple-400' : isAlternateTheme ? 'text-sky-400' : 'text-white'
@@ -522,7 +525,7 @@ export default function App() {
           {/* Resume Viewer Trigger */}
           <button
             onClick={() => { setIsResumeOpen(true); sound.playConfirm(); }}
-            className="flex items-center gap-1.5 px-3 py-1.5 border border-emerald-500/30 hover:border-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 rounded-full font-mono text-[11px] text-emerald-300 transition-all cursor-pointer"
+            className="flex items-center gap-1.5 px-3.5 py-1.5 border border-emerald-500/30 hover:border-emerald-400/60 bg-emerald-500/10 hover:bg-emerald-500/20 active:scale-[0.96] rounded-full font-mono text-[11px] text-emerald-300 transition-all duration-200 cursor-pointer"
             title="View Curriculum Vitae"
           >
             <FileText size={12} className="text-emerald-400" />
@@ -532,7 +535,7 @@ export default function App() {
           {/* Command palette trigger */}
           <button 
             onClick={() => setIsPaletteOpen(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 border border-white/10 hover:border-white/40 bg-white/3 hover:bg-white/8 rounded-full font-sans text-[11px] text-white/60 hover:text-white transition-all"
+            className="flex items-center gap-1.5 px-3 py-1.5 border border-white/10 hover:border-white/35 bg-white/3 hover:bg-white/8 active:scale-[0.96] rounded-full font-sans text-[11px] text-white/60 hover:text-white transition-all duration-200 cursor-pointer"
           >
             <span className="hidden sm:inline text-white/35 text-[10px] font-mono">⌘K</span>
             <span className="sm:hidden font-mono text-[10px]">Menu</span>
@@ -541,7 +544,9 @@ export default function App() {
           {/* Audio toggle */}
           <button
             onClick={toggleMute}
-            className={`w-8 h-8 rounded-full border flex items-center justify-center transition-all cursor-pointer ${isMuted ? 'border-white/10 text-white/35 hover:border-white/35 hover:text-white/70' : 'border-white/35 text-white/80 hover:bg-white/8'}`}
+            className={`w-8 h-8 rounded-full border flex items-center justify-center transition-all duration-200 cursor-pointer active:scale-[0.96] ${
+              isMuted ? 'border-white/10 text-white/35 hover:border-white/35 hover:text-white/70' : 'border-white/35 text-white/80 hover:bg-white/8'
+            }`}
             title={isMuted ? "Enable audio" : "Mute audio"}
           >
             {isMuted ? <VolumeX size={13} /> : <Volume2 size={13} />}
@@ -550,7 +555,7 @@ export default function App() {
       </header>
 
       {/* FLOATING VERTICAL SECTIONS TRACKER INDICATOR */}
-      <div className="fixed right-6 top-1/2 -translate-y-1/2 hidden md:flex flex-col gap-5 z-40 font-sans text-[9px] select-none">
+      <div className="fixed right-6 top-1/2 -translate-y-1/2 hidden md:flex flex-col gap-4 z-40 font-sans text-[10px] select-none">
         {[
           { id: 'hero',     label: '01 — Home' },
           { id: 'about',    label: '02 — Who I Am' },
@@ -702,11 +707,11 @@ export default function App() {
         {/* SECTION 1: HERO */}
         <section id="hero-anchor" className="min-h-screen flex flex-col items-center justify-center text-center px-4 relative">
           <div id="hero-content" className="w-full flex flex-col items-center justify-center text-center relative h-full">
-            <div className="space-y-5 max-w-4xl">
-              <h1 className="text-4xl sm:text-6xl md:text-7xl font-sans tracking-[2px] sm:tracking-[4px] md:tracking-[6px] font-bold text-white select-none leading-tight">
+            <div className="space-y-6 max-w-4xl">
+              <h1 className="text-4xl sm:text-6xl md:text-7xl font-sans tracking-[3px] sm:tracking-[5px] md:tracking-[7px] font-bold text-white select-none leading-tight text-balance">
                 Sheikh Tijan Touray
               </h1>
-              <p className="text-white/55 text-sm sm:text-base font-sans max-w-xl mx-auto leading-relaxed font-light">
+              <p className="text-white/60 text-sm sm:text-base font-sans max-w-2xl mx-auto leading-[1.8] font-light">
                 Frontend Engineer crafting refined, interactive web experiences with React, Next.js, and TypeScript.
               </p>
             </div>

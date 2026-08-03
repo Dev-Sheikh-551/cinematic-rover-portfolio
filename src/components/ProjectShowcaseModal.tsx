@@ -56,7 +56,7 @@ export const ProjectShowcaseModal: React.FC<ProjectShowcaseModalProps> = ({ proj
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           onClick={handleClose}
-          className="fixed inset-0 bg-black/80 backdrop-blur-md"
+          className="fixed inset-0 bg-black/80 backdrop-blur-xl"
         />
 
         {/* Modal Container */}
@@ -64,7 +64,7 @@ export const ProjectShowcaseModal: React.FC<ProjectShowcaseModalProps> = ({ proj
           initial={{ opacity: 0, scale: 0.95, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 20 }}
-          transition={{ type: 'spring', damping: 25, stiffness: 220 }}
+          transition={{ type: 'spring', damping: 28, stiffness: 260 }}
           className="relative w-full max-w-4xl max-h-[90vh] z-10 overflow-hidden flex flex-col my-auto"
         >
           <LiquidGlass
@@ -108,7 +108,7 @@ export const ProjectShowcaseModal: React.FC<ProjectShowcaseModalProps> = ({ proj
                 <div className="flex items-center gap-1 bg-white/5 p-1 rounded-xl border border-white/10">
                   <button
                     onClick={() => { setDeviceMode('desktop'); sound.playTick(); }}
-                    className={`flex items-center gap-1.5 px-3 py-1 rounded-lg transition-all cursor-pointer ${
+                    className={`flex items-center gap-1.5 px-3 py-1 rounded-lg transition-all duration-150 cursor-pointer active:scale-[0.96] ${
                       deviceMode === 'desktop'
                         ? 'bg-white/20 text-white font-medium shadow'
                         : 'text-white/40 hover:text-white/70'
@@ -120,7 +120,7 @@ export const ProjectShowcaseModal: React.FC<ProjectShowcaseModalProps> = ({ proj
 
                   <button
                     onClick={() => { setDeviceMode('tablet'); sound.playTick(); }}
-                    className={`flex items-center gap-1.5 px-3 py-1 rounded-lg transition-all cursor-pointer ${
+                    className={`flex items-center gap-1.5 px-3 py-1 rounded-lg transition-all duration-150 cursor-pointer active:scale-[0.96] ${
                       deviceMode === 'tablet'
                         ? 'bg-white/20 text-white font-medium shadow'
                         : 'text-white/40 hover:text-white/70'
@@ -195,9 +195,9 @@ export const ProjectShowcaseModal: React.FC<ProjectShowcaseModalProps> = ({ proj
             <div className="flex items-center gap-2 border-b border-white/10 pb-3 mb-5 font-mono text-xs">
               <button
                 onClick={() => { setActiveTab('overview'); sound.playTick(); }}
-                className={`px-3 py-1 rounded-lg border transition-all cursor-pointer ${
+                className={`px-3.5 py-1.5 rounded-lg border transition-all duration-150 cursor-pointer active:scale-[0.96] ${
                   activeTab === 'overview'
-                    ? 'bg-white/15 border-white/30 text-white font-medium'
+                    ? 'bg-white/15 border-white/30 text-white font-medium shadow'
                     : 'border-transparent text-white/40 hover:text-white/70'
                 }`}
               >
@@ -206,9 +206,9 @@ export const ProjectShowcaseModal: React.FC<ProjectShowcaseModalProps> = ({ proj
 
               <button
                 onClick={() => { setActiveTab('architecture'); sound.playTick(); }}
-                className={`px-3 py-1 rounded-lg border transition-all cursor-pointer ${
+                className={`px-3.5 py-1.5 rounded-lg border transition-all duration-150 cursor-pointer active:scale-[0.96] ${
                   activeTab === 'architecture'
-                    ? 'bg-white/15 border-white/30 text-white font-medium'
+                    ? 'bg-white/15 border-white/30 text-white font-medium shadow'
                     : 'border-transparent text-white/40 hover:text-white/70'
                 }`}
               >
@@ -363,7 +363,7 @@ export const ProjectShowcaseModal: React.FC<ProjectShowcaseModalProps> = ({ proj
                     href={project.demoUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-bold flex items-center gap-2 transition-all shadow-lg cursor-pointer"
+                    className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 active:scale-[0.96] text-black font-bold flex items-center gap-2 transition-all duration-150 shadow-lg cursor-pointer"
                   >
                     <span>Live Demo</span>
                     <ExternalLink size={14} />
@@ -375,7 +375,7 @@ export const ProjectShowcaseModal: React.FC<ProjectShowcaseModalProps> = ({ proj
                     href={project.githubUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-white font-medium flex items-center gap-2 transition-all cursor-pointer"
+                    className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 active:scale-[0.96] border border-white/20 text-white font-medium flex items-center gap-2 transition-all duration-150 cursor-pointer"
                   >
                     <Github size={14} />
                     <span>Repository</span>
@@ -385,7 +385,7 @@ export const ProjectShowcaseModal: React.FC<ProjectShowcaseModalProps> = ({ proj
 
               <button
                 onClick={handleClose}
-                className="text-white/40 hover:text-white text-xs transition-colors cursor-pointer"
+                className="text-white/40 hover:text-white active:scale-[0.96] text-xs transition-all duration-150 cursor-pointer"
               >
                 Close Presentation
               </button>

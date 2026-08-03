@@ -557,8 +557,8 @@ export const CinematicCanvas: React.FC<CinematicCanvasProps> = ({
         stateRef.current.camX = destCamX;
         stateRef.current.camY = destCamY;
         stateRef.current.camZ = destCamZ;
-        stateRef.current.camYaw = targetYaw;
-        stateRef.current.camPitch = targetPitch;
+        stateRef.current.cameraYaw = targetYaw;
+        stateRef.current.cameraPitch = targetPitch;
       }
 
       const forceCamX = (destCamX - stateRef.current.camX) * camSpringK - stateRef.current.camVelX * camDamping;
@@ -574,17 +574,17 @@ export const CinematicCanvas: React.FC<CinematicCanvasProps> = ({
       stateRef.current.camZ += stateRef.current.camVelZ;
 
       // 6. Angle Wrapping & Max Angular Velocity Clamping (Prevents sudden snaps/harsh rotations)
-      let yawDiff = targetYaw - stateRef.current.camYaw;
+      let yawDiff = targetYaw - stateRef.current.cameraYaw;
       while (yawDiff > Math.PI) yawDiff -= Math.PI * 2;
       while (yawDiff < -Math.PI) yawDiff += Math.PI * 2;
 
       const maxRotSpeed = 0.032; // max radians per frame
       const stepYaw = Math.max(-maxRotSpeed, Math.min(maxRotSpeed, yawDiff * 0.065));
-      stateRef.current.camYaw += stepYaw + handheldYaw;
+      stateRef.current.cameraYaw += stepYaw + handheldYaw;
 
-      let pitchDiff = targetPitch - stateRef.current.camPitch;
+      let pitchDiff = targetPitch - stateRef.current.cameraPitch;
       const stepPitch = Math.max(-maxRotSpeed, Math.min(maxRotSpeed, pitchDiff * 0.065));
-      stateRef.current.camPitch += stepPitch + handheldPitch;
+      stateRef.current.cameraPitch += stepPitch + handheldPitch;
 
       stateRef.current.camFocal += (targetFocal - stateRef.current.camFocal) * 0.05;
 
@@ -592,8 +592,8 @@ export const CinematicCanvas: React.FC<CinematicCanvasProps> = ({
         x: stateRef.current.camX,
         y: stateRef.current.camY,
         z: stateRef.current.camZ,
-        yaw: stateRef.current.camYaw,
-        pitch: stateRef.current.camPitch,
+        yaw: stateRef.current.cameraYaw,
+        pitch: stateRef.current.cameraPitch,
         focal: stateRef.current.camFocal,
       };
 

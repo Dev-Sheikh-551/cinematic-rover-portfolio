@@ -43,8 +43,8 @@ export const AboutHologram: React.FC<AboutHologramProps> = ({ scrollProgress, on
 
       {/* SECTION TITLE HEADER */}
       <div className="text-center lg:text-left">
-        <div className="text-xs font-mono text-white/35 tracking-widest mb-2">// Who I Am</div>
-        <h2 className="text-3xl md:text-5xl font-sans tracking-tight text-white font-bold">
+        <div className="text-xs font-mono text-white/35 tracking-widest mb-2.5">// Who I Am</div>
+        <h2 className="text-4xl md:text-5xl font-sans tracking-tight text-white font-bold leading-[1.1] text-balance">
           Developer, Craftsman &amp; Creator
         </h2>
       </div>
@@ -67,11 +67,11 @@ export const AboutHologram: React.FC<AboutHologramProps> = ({ scrollProgress, on
 
             {/* Bio Header */}
             <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
-              <div className="space-y-2 max-w-xl">
-                <h3 className="text-2xl font-sans font-medium text-white">
+              <div className="space-y-2.5 max-w-xl">
+                <h3 className="text-2xl font-sans font-medium text-white leading-snug">
                   Hi, I'm <span className="font-semibold text-white underline underline-offset-8 decoration-white/20">Sheikh Tijan Touray</span>
                 </h3>
-                <p className="text-white/75 text-sm leading-relaxed">
+                <p className="text-white/78 text-[15px] leading-[1.75] font-light">
                   I'm a frontend engineer from The Gambia driven by a passion for building clean, fast, and memorable web experiences. I specialize in modern React ecosystems, Next.js, TypeScript, and fine-tuned animations.
                 </p>
               </div>
@@ -79,7 +79,7 @@ export const AboutHologram: React.FC<AboutHologramProps> = ({ scrollProgress, on
               {onOpenResume && (
                 <button
                   onClick={() => { onOpenResume(); sound.playConfirm(); }}
-                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-emerald-500/40 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 font-mono text-xs font-medium transition-all duration-300 shrink-0 cursor-pointer shadow-lg hover:shadow-emerald-500/10"
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-emerald-500/40 bg-emerald-500/10 hover:bg-emerald-500/20 active:scale-[0.96] text-emerald-300 font-mono text-xs font-medium transition-all duration-200 shrink-0 cursor-pointer shadow-lg hover:shadow-emerald-500/10"
                 >
                   <FileText size={14} className="text-emerald-400" />
                   <span>View Resume</span>
@@ -107,16 +107,16 @@ export const AboutHologram: React.FC<AboutHologramProps> = ({ scrollProgress, on
             {/* Sub-panel stats footer */}
             <div className="grid grid-cols-3 gap-3 pt-4 border-t border-white/10">
               <LiquidGlass radius="0.75rem" distortion={5} blur={0} tint={0.05} className="text-center p-3">
-                <div className="text-xl font-mono text-white font-medium">5+</div>
-                <div className="text-[9px] font-mono text-white/40 uppercase tracking-widest">Years Code</div>
+                <div className="text-2xl font-mono text-white font-semibold tabular-nums">5+</div>
+                <div className="text-[9px] font-mono text-white/40 uppercase tracking-widest mt-0.5">Years Code</div>
               </LiquidGlass>
               <LiquidGlass radius="0.75rem" distortion={5} blur={0} tint={0.05} className="text-center p-3">
-                <div className="text-xl font-mono text-white font-medium">24+</div>
-                <div className="text-[9px] font-mono text-white/40 uppercase tracking-widest">Deployments</div>
+                <div className="text-2xl font-mono text-white font-semibold tabular-nums">24+</div>
+                <div className="text-[9px] font-mono text-white/40 uppercase tracking-widest mt-0.5">Deployments</div>
               </LiquidGlass>
               <LiquidGlass radius="0.75rem" distortion={5} blur={0} tint={0.05} className="text-center p-3">
-                <div className="text-xl font-mono text-white font-medium">100%</div>
-                <div className="text-[9px] font-mono text-white/40 uppercase tracking-widest">Crafted</div>
+                <div className="text-2xl font-mono text-white font-semibold tabular-nums">100%</div>
+                <div className="text-[9px] font-mono text-white/40 uppercase tracking-widest mt-0.5">Crafted</div>
               </LiquidGlass>
             </div>
 

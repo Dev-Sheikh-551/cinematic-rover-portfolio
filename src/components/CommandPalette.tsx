@@ -165,12 +165,13 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 bg-black/75 backdrop-blur-md z-50 flex items-start justify-center pt-[15vh] px-4">
+      <div className="fixed inset-0 bg-black/80 backdrop-blur-xl z-50 flex items-start justify-center pt-[14vh] px-4">
         <motion.div
-          initial={{ opacity: 0, scale: 0.95, y: -20 }}
+          initial={{ opacity: 0, scale: 0.96, y: -16 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.95, y: -20 }}
-          className="w-full max-w-lg border border-white/15 bg-black/95 rounded-2xl overflow-hidden shadow-2xl flex flex-col font-mono text-xs text-white/80"
+          exit={{ opacity: 0, scale: 0.96, y: -16 }}
+          transition={{ type: 'spring', stiffness: 280, damping: 24 }}
+          className="w-full max-w-lg border border-white/15 bg-black/96 rounded-2xl overflow-hidden shadow-2xl flex flex-col font-mono text-xs text-white/80"
         >
           {/* Header Input */}
           <div className="flex items-center gap-2 px-4 py-3 border-b border-white/10 bg-white/5">
@@ -198,31 +199,37 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                 <button
                   key={cmd.id}
                   onClick={() => handleCommandSelect(cmd)}
-                  className="w-full text-left px-3 py-2.5 hover:bg-white/10 border border-transparent hover:border-white/10 rounded-xl flex items-center justify-between transition-all group cursor-pointer"
+                  className="w-full text-left px-3 py-3 hover:bg-white/8 border border-transparent hover:border-white/10 rounded-xl flex items-center justify-between transition-all duration-150 group cursor-pointer active:scale-[0.99]"
                 >
                   <div className="flex items-center gap-3">
-                    <span className="text-white/40 group-hover:text-emerald-400 transition-colors">
+                    <span className="text-white/40 group-hover:text-emerald-400 transition-colors duration-150">
                       {cmd.icon}
                     </span>
-                    <span className="group-hover:text-white transition-colors font-mono">
+                    <span className="group-hover:text-white transition-colors duration-150 font-mono">
                       {cmd.title}
                     </span>
                   </div>
-                  <span className="text-[9px] text-white/30 group-hover:text-white/60 font-mono">
+                  <span className="text-[9px] text-white/30 group-hover:text-white/55 font-mono px-1.5 py-0.5 rounded-md bg-white/4 border border-white/8 transition-colors duration-150">
                     {cmd.category}
                   </span>
                 </button>
               ))
             ) : (
-              <div className="p-4 text-center text-white/40 text-xs">
-                No matching system command found
+              <div className="p-6 text-center text-white/35 text-xs flex flex-col items-center gap-2">
+                <span className="text-white/20 text-2xl">⌀</span>
+                <span>No matching system command found</span>
               </div>
             )}
           </div>
 
-          <div className="px-4 py-2 border-t border-white/10 bg-white/2 text-[9px] text-white/30 flex justify-between">
-            <span>PRESS ESC TO CLOSE</span>
-            <span>ACTIONABLE COMMAND SYSTEM</span>
+          <div className="px-4 py-2.5 border-t border-white/10 bg-white/2 text-[9px] text-white/30 flex justify-between items-center">
+            <span className="flex items-center gap-1.5">
+              <kbd className="px-1.5 py-0.5 rounded bg-white/8 border border-white/12 font-mono">↵</kbd>
+              <span>to select</span>
+              <kbd className="px-1.5 py-0.5 rounded bg-white/8 border border-white/12 font-mono ml-2">ESC</kbd>
+              <span>to close</span>
+            </span>
+            <span className="text-white/20">ACTIONABLE COMMAND SYSTEM</span>
           </div>
         </motion.div>
       </div>

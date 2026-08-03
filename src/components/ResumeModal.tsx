@@ -190,7 +190,7 @@ export const ResumeModal: React.FC<ResumeModalProps> = ({
                 {/* Download PDF */}
                 <button
                   onClick={handleDownload}
-                  className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl border border-white/15 bg-white/5 hover:bg-white/15 text-white font-mono text-[10px] transition-all cursor-pointer"
+                  className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl border border-white/15 bg-white/5 hover:bg-white/15 active:scale-[0.96] text-white font-mono text-[10px] transition-all duration-150 cursor-pointer"
                   title="Download PDF"
                 >
                   <Download size={12} className="text-emerald-400" />
@@ -200,7 +200,7 @@ export const ResumeModal: React.FC<ResumeModalProps> = ({
                 {/* Print */}
                 <button
                   onClick={handlePrint}
-                  className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl border border-white/15 bg-white/5 hover:bg-white/15 text-white font-mono text-[10px] transition-all cursor-pointer"
+                  className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl border border-white/15 bg-white/5 hover:bg-white/15 active:scale-[0.96] text-white font-mono text-[10px] transition-all duration-150 cursor-pointer"
                   title="Print Document"
                 >
                   <Printer size={12} className="text-sky-400" />
@@ -210,7 +210,7 @@ export const ResumeModal: React.FC<ResumeModalProps> = ({
                 {/* Open in New Tab */}
                 <button
                   onClick={handleOpenNewTab}
-                  className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl border border-white/15 bg-white/5 hover:bg-white/15 text-white font-mono text-[10px] transition-all cursor-pointer"
+                  className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl border border-white/15 bg-white/5 hover:bg-white/15 active:scale-[0.96] text-white font-mono text-[10px] transition-all duration-150 cursor-pointer"
                   title="Open in New Tab"
                 >
                   <ExternalLink size={12} className="text-purple-400" />
@@ -220,7 +220,7 @@ export const ResumeModal: React.FC<ResumeModalProps> = ({
                 {/* Close Button */}
                 <button
                   onClick={onClose}
-                  className="p-1.5 rounded-full text-white/50 hover:text-white hover:bg-white/10 transition-colors cursor-pointer ml-1"
+                  className="p-1.5 rounded-full text-white/50 hover:text-white hover:bg-white/10 active:scale-[0.96] transition-all duration-150 cursor-pointer ml-1"
                   aria-label="Close Resume Viewer"
                 >
                   <X size={16} />
@@ -323,7 +323,7 @@ export const ResumeModal: React.FC<ResumeModalProps> = ({
                     <div className="font-mono text-[10px] text-white/40 uppercase tracking-widest font-bold">
                       // Executive Summary
                     </div>
-                    <p className="text-sm text-white/80 leading-relaxed font-light">
+                    <p className="text-[15px] text-white/80 leading-[1.75] font-light">
                       Frontend engineer driven by craftsmanship, modern web standards, and fine-tuned interactive design. Proven track record of building production React/Next.js storefronts, WebGL/Canvas physics integrations, state architectures, and responsive UI systems.
                     </p>
                   </div>

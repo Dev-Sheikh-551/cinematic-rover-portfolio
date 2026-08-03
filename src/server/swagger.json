@@ -1,0 +1,60 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Portfolio Platform API",
+    "version": "1.0.0",
+    "description": "Production-grade REST API backend for Sheikh Tijan Touray's Portfolio Platform."
+  },
+  "servers": [
+    {
+      "url": "/api/v1",
+      "description": "API v1 Endpoint Base"
+    }
+  ],
+  "paths": {
+    "/health": {
+      "get": {
+        "summary": "Health Diagnostic Check",
+        "description": "Returns full system diagnostics including API state, database ping latency, uptime, and memory usage.",
+        "responses": {
+          "200": {
+            "description": "System Healthy",
+            "content": {
+              "application/json": {
+                "example": {
+                  "success": true,
+                  "data": {
+                    "api": {
+                      "status": "ok",
+                      "version": "1.0.0",
+                      "environment": "development",
+                      "uptimeSeconds": 120,
+                      "timestamp": "2026-08-03T11:00:00.000Z"
+                    },
+                    "database": {
+                      "status": "connected",
+                      "latencyMs": 4,
+                      "provider": "postgresql"
+                    },
+                    "system": {
+                      "nodeVersion": "v22.14.0",
+                      "platform": "win32",
+                      "memory": {
+                        "rss": "45.20 MB",
+                        "heapTotal": "28.50 MB",
+                        "heapUsed": "18.30 MB"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Database Connection Issue"
+          }
+        }
+      }
+    }
+  }
+}

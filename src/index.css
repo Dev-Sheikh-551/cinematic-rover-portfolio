@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
 
 @theme {
@@ -6,36 +6,49 @@
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
 }
 
-/* Custom Scrollbar */
+/* ── Smooth Scroll ── */
+html {
+  scroll-behavior: smooth;
+}
+
+/* ── Premium Typography Foundation ── */
+body {
+  background-color: #030303;
+  color: #ffffff;
+  overflow-x: hidden;
+  font-family: var(--font-sans);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: "kern" 1, "liga" 1;
+}
+
+/* ── Custom Scrollbar ── */
 .custom-scrollbar::-webkit-scrollbar {
   width: 4px;
   height: 4px;
 }
 .custom-scrollbar::-webkit-scrollbar-track {
   background: rgba(255, 255, 255, 0.02);
+  border-radius: 2px;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.18);
   border-radius: 2px;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.35);
 }
 
-body {
-  background-color: #030303;
-  color: #ffffff;
-  overflow-x: hidden;
-  font-family: var(--font-sans);
-}
-
-/* Accessible Focus Rings & Screen Reader Utilities */
+/* ── Accessible Focus Rings ── */
 :focus-visible {
-  outline: 2px solid rgba(16, 185, 129, 0.85);
-  outline-offset: 3px;
-  border-radius: 6px;
+  outline: 2px solid rgba(16, 185, 129, 0.9);
+  outline-offset: 2px;
+  border-radius: 8px;
 }
 
+/* ── Screen Reader Utilities ── */
 .sr-only {
   position: absolute;
   width: 1px;
@@ -59,52 +72,34 @@ body {
   white-space: normal;
 }
 
-/* Background grid utility */
+/* ── Background Grid ── */
 .bg-grid-pattern {
   background-size: 40px 40px;
   background-image: 
-    linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+    linear-gradient(to right, rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
 }
 
-/* Glitch and Interference Keyframes */
+/* ── Glitch & Interference Keyframes ── */
 @keyframes glitch-skew {
-  0% { transform: skew(0deg); }
-  20% { transform: skew(-3deg) translate(-2px, 1px); }
-  40% { transform: skew(2deg) translate(2px, -1px); }
-  60% { transform: skew(-1deg) translate(-1px, 1px); }
-  80% { transform: skew(3deg) translate(3px, -2px); }
+  0%   { transform: skew(0deg); }
+  20%  { transform: skew(-3deg) translate(-2px, 1px); }
+  40%  { transform: skew(2deg) translate(2px, -1px); }
+  60%  { transform: skew(-1deg) translate(-1px, 1px); }
+  80%  { transform: skew(3deg) translate(3px, -2px); }
   100% { transform: skew(0deg); }
 }
 
 @keyframes glitch-aberration {
-  0% {
-    text-shadow: none;
-    box-shadow: 0 0 12px rgba(255,255,255,0.15);
-  }
-  10% {
-    text-shadow: 1.5px -1.5px #ff0055, -1.5px 1.5px #00ffcc;
-    box-shadow: 1px -1px rgba(255,0,85,0.25), -1px 1px rgba(0,255,204,0.25);
-  }
-  30% {
-    text-shadow: -2px 1px #ff0055, 2px -1px #00ffcc;
-  }
-  50% {
-    text-shadow: 1px 2px #ff0055, -1px -2px #00ffcc;
-  }
-  70% {
-    text-shadow: -1.5px -1.5px #ff0055, 1.5px 1.5px #00ffcc;
-  }
-  90% {
-    text-shadow: 2px 1px #ff0055, -2px -1px #00ffcc;
-  }
-  100% {
-    text-shadow: none;
-    box-shadow: 0 0 12px rgba(255,255,255,0.15);
-  }
+  0%   { text-shadow: none; box-shadow: 0 0 12px rgba(255,255,255,0.15); }
+  10%  { text-shadow: 1.5px -1.5px #ff0055, -1.5px 1.5px #00ffcc; box-shadow: 1px -1px rgba(255,0,85,0.25), -1px 1px rgba(0,255,204,0.25); }
+  30%  { text-shadow: -2px 1px #ff0055, 2px -1px #00ffcc; }
+  50%  { text-shadow: 1px 2px #ff0055, -1px -2px #00ffcc; }
+  70%  { text-shadow: -1.5px -1.5px #ff0055, 1.5px 1.5px #00ffcc; }
+  90%  { text-shadow: 2px 1px #ff0055, -2px -1px #00ffcc; }
+  100% { text-shadow: none; box-shadow: 0 0 12px rgba(255,255,255,0.15); }
 }
 
-/* Apply this class during glitches */
 .environmental-glitch-active {
   animation: glitch-skew 0.15s infinite linear alternate-reverse;
 }
@@ -113,23 +108,39 @@ body {
   animation: glitch-aberration 0.2s infinite linear;
 }
 
-/* Glassmorphic Panel & Magnetic Interactive Polish */
+/* ── Glassmorphic Panel — Apple Liquid Glass ── */
 .glass-panel {
-  background: rgba(12, 12, 12, 0.75);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
-  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  background: rgba(10, 10, 10, 0.72);
+  backdrop-filter: blur(20px) saturate(1.5);
+  -webkit-backdrop-filter: blur(20px) saturate(1.5);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.04),
+    0 8px 32px rgba(0, 0, 0, 0.55),
+    0 0 0 0.5px rgba(255, 255, 255, 0.05);
+  transition: border-color 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .glass-panel:hover {
-  border-color: rgba(255, 255, 255, 0.2);
-  box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.65), 0 0 20px rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.22);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.20),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.06),
+    0 16px 48px rgba(0, 0, 0, 0.65),
+    0 0 20px rgba(255, 255, 255, 0.04),
+    0 0 0 0.5px rgba(255, 255, 255, 0.08);
 }
 
+/* ── Magnetic Button — Tactile Press Animation ── */
 .magnetic-btn {
-  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.25s ease;
+  will-change: transform;
+  transition:
+    transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+    background-color 0.2s ease,
+    border-color 0.2s ease;
 }
 
 .magnetic-btn:hover {
@@ -137,6 +148,28 @@ body {
 }
 
 .magnetic-btn:active {
-  transform: translateY(1px) scale(0.98);
+  transform: translateY(1px) scale(0.97);
+  transition-duration: 0.08s;
+}
+
+/* ── Premium Mono Label utility ── */
+.premium-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.40);
+}
+
+/* ── Text Balance for headings ── */
+.text-balance {
+  text-wrap: balance;
+}
+
+/* ── Tabular mono numbers ── */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
 }
 

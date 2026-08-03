@@ -7,7 +7,7 @@
  * Drop this around any card to give it liquid-glass refraction.
  */
 
-import React, { useId, useState, useRef, useEffect } from 'react';
+import React, { useId, useState, useRef, memo } from 'react';
 import { motion } from 'motion/react';
 
 interface LiquidGlassProps {
@@ -27,6 +27,8 @@ interface LiquidGlassProps {
   style?: React.CSSProperties;
   /** Enable interactive dynamic tilt & glare tracking (default true) */
   interactive?: boolean;
+  onMouseEnter?: (e: React.MouseEvent<HTMLDivElement>) => void;
+  onMouseLeave?: (e: React.MouseEvent<HTMLDivElement>) => void;
 }
 
 /**
@@ -38,7 +40,7 @@ interface LiquidGlassProps {
  *  - Dynamic cursor-tracked reflection sweep & edge specular highlights
  *  - Physical spring breathing hover response
  */
-export const LiquidGlass: React.FC<LiquidGlassProps> = ({
+const LiquidGlassInner: React.FC<LiquidGlassProps> = ({
   children,
   className = '',
   contentClassName = '',
@@ -49,6 +51,8 @@ export const LiquidGlass: React.FC<LiquidGlassProps> = ({
   tint = 0.03,
   style = {},
   interactive = true,
+  onMouseEnter,
+  onMouseLeave,
 }) => {
   const uid = useId().replace(/:/g, '');
   const filterId = `lg-filter-${uid}`;
@@ -66,15 +70,17 @@ export const LiquidGlass: React.FC<LiquidGlassProps> = ({
     setMousePos({ x, y, opacity: 1 });
   };
 
-  const handleMouseEnter = () => {
+  const handleMouseEnter = (e: React.MouseEvent<HTMLDivElement>) => {
     if (interactive) setIsHovered(true);
+    if (onMouseEnter) onMouseEnter(e);
   };
 
-  const handleMouseLeave = () => {
+  const handleMouseLeave = (e: React.MouseEvent<HTMLDivElement>) => {
     if (interactive) {
       setIsHovered(false);
       setMousePos(prev => ({ ...prev, opacity: 0 }));
     }
+    if (onMouseLeave) onMouseLeave(e);
   };
 
   return (
@@ -84,12 +90,12 @@ export const LiquidGlass: React.FC<LiquidGlassProps> = ({
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       animate={{
-        y: isHovered ? -4 : 0,
-        scale: isHovered ? 1.01 : 1,
+        y: isHovered ? -3 : 0,
+        scale: isHovered ? 1.008 : 1,
       }}
-      transition={{ type: 'spring', stiffness: 180, damping: 22 }}
+      transition={{ type: 'spring', stiffness: 200, damping: 26 }}
       className={`relative overflow-hidden ${className}`}
-      style={{ borderRadius: radius, ...style }}
+      style={{ borderRadius: radius, willChange: 'transform', ...style }}
     >
       {/* ── SVG Refraction Filter (Displacement Map) ── */}
       <svg
@@ -100,15 +106,15 @@ export const LiquidGlass: React.FC<LiquidGlassProps> = ({
           <filter id={filterId} x="-10%" y="-10%" width="120%" height="120%" colorInterpolationFilters="sRGB">
             <feTurbulence
               type="fractalNoise"
-              baseFrequency="0.015 0.018"
-              numOctaves="2"
-              seed="3"
+              baseFrequency="0.012 0.015"
+              numOctaves="3"
+              seed="5"
               result="noise"
             >
               <animate
                 attributeName="baseFrequency"
-                values="0.015 0.018; 0.019 0.015; 0.015 0.018"
-                dur="14s"
+                values="0.012 0.015; 0.016 0.012; 0.012 0.015"
+                dur="18s"
                 repeatCount="indefinite"
               />
             </feTurbulence>
@@ -150,11 +156,11 @@ export const LiquidGlass: React.FC<LiquidGlassProps> = ({
           position: 'absolute',
           inset: 0,
           borderRadius: radius,
-          background: `rgba(255, 255, 255, ${isHovered ? tint * 0.7 : tint})`,
+          background: `rgba(255, 255, 255, ${isHovered ? tint * 0.45 : tint})`,
           backdropFilter: `blur(${blur}px)`,
           WebkitBackdropFilter: `blur(${blur}px)`,
           zIndex: 1,
-          transition: 'background 0.4s ease',
+          transition: 'background 0.35s ease',
         }}
       />
 
@@ -166,9 +172,11 @@ export const LiquidGlass: React.FC<LiquidGlassProps> = ({
           inset: 0,
           borderRadius: radius,
           background:
-            'linear-gradient(135deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.02) 40%, transparent 60%)',
+            'linear-gradient(135deg, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0.04) 35%, transparent 55%)',
           zIndex: 2,
           pointerEvents: 'none',
+          transition: 'opacity 0.35s ease',
+          opacity: isHovered ? 0.85 : 1,
         }}
       />
 
@@ -179,9 +187,9 @@ export const LiquidGlass: React.FC<LiquidGlassProps> = ({
           position: 'absolute',
           inset: 0,
           borderRadius: radius,
-          background: `radial-gradient(circle 180px at ${mousePos.x}% ${mousePos.y}%, rgba(255, 255, 255, 0.16), transparent 70%)`,
+          background: `radial-gradient(circle 240px at ${mousePos.x}% ${mousePos.y}%, rgba(255, 255, 255, 0.20), transparent 70%)`,
           opacity: mousePos.opacity,
-          transition: 'opacity 0.3s ease',
+          transition: 'opacity 0.25s ease',
           zIndex: 3,
           pointerEvents: 'none',
         }}
@@ -194,13 +202,13 @@ export const LiquidGlass: React.FC<LiquidGlassProps> = ({
           position: 'absolute',
           inset: 0,
           borderRadius: radius,
-          border: isHovered ? '1px solid rgba(255, 255, 255, 0.28)' : '1px solid rgba(255, 255, 255, 0.12)',
+          border: isHovered ? '1px solid rgba(255, 255, 255, 0.30)' : '1px solid rgba(255, 255, 255, 0.14)',
           zIndex: 4,
           pointerEvents: 'none',
           boxShadow: isHovered
-            ? 'inset 0 1px 0 rgba(255,255,255,0.4), inset 0 -1px 0 rgba(255,255,255,0.08), 0 12px 40px rgba(0,0,0,0.35)'
-            : 'inset 0 1px 0 rgba(255,255,255,0.25), inset 0 -1px 0 rgba(255,255,255,0.04), 0 4px 20px rgba(0,0,0,0.25)',
-          transition: 'border 0.4s ease, box-shadow 0.4s ease',
+            ? 'inset 0 1px 0 rgba(255,255,255,0.45), inset 0 -1px 0 rgba(255,255,255,0.10), 0 0 0 0.5px rgba(255,255,255,0.10), 0 16px 48px rgba(0,0,0,0.40)'
+            : 'inset 0 1px 0 rgba(255,255,255,0.28), inset 0 -1px 0 rgba(255,255,255,0.05), 0 0 0 0.5px rgba(255,255,255,0.06), 0 4px 20px rgba(0,0,0,0.28)',
+          transition: 'border 0.35s ease, box-shadow 0.35s ease',
         }}
       />
 
@@ -211,3 +219,5 @@ export const LiquidGlass: React.FC<LiquidGlassProps> = ({
     </motion.div>
   );
 };
+
+export const LiquidGlass = memo(LiquidGlassInner);

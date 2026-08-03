@@ -109,7 +109,7 @@ export const ThemeStudio: React.FC = () => {
               initial={{ opacity: 0, x: 50, scale: 0.95 }}
               animate={{ opacity: 1, x: 0, scale: 1 }}
               exit={{ opacity: 0, x: 50, scale: 0.95 }}
-              transition={{ type: 'spring', damping: 25, stiffness: 220 }}
+              transition={{ type: 'spring', damping: 28, stiffness: 260 }}
               className="relative w-full max-w-md pointer-events-auto max-h-[85vh] flex flex-col"
             >
               <LiquidGlass
@@ -130,9 +130,9 @@ export const ThemeStudio: React.FC = () => {
                   </div>
                   <button
                     onClick={handleToggleOpen}
-                    className="p-1 rounded-full text-white/60 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+                    className="p-1.5 rounded-full text-white/60 hover:text-white hover:bg-white/10 active:scale-[0.96] transition-all duration-150 cursor-pointer"
                   >
-                    <X size={16} />
+                    <X size={15} />
                   </button>
                 </div>
 

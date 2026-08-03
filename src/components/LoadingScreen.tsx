@@ -135,7 +135,7 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({ onComplete }) => {
             filter: isReducedMotion ? 'none' : 'blur(8px)',
           }}
           transition={{
-            duration: isReducedMotion ? 0.3 : 0.6,
+            duration: isReducedMotion ? 0.3 : 0.9,
             ease: [0.16, 1, 0.3, 1],
           }}
           className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#030308]/95 backdrop-blur-2xl select-none"
@@ -189,12 +189,12 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({ onComplete }) => {
 
               {/* Centered ST Monogram */}
               <motion.div
-                initial={isReducedMotion ? { opacity: 1 } : { opacity: 0, scale: 0.85 }}
+                initial={isReducedMotion ? { opacity: 1 } : { opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.5, ease: 'easeOut' }}
-                className="w-16 h-16 rounded-2xl bg-white/5 border border-white/20 flex items-center justify-center shadow-lg relative overflow-hidden group"
+                transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+                className="w-16 h-16 rounded-2xl bg-white/5 border border-white/20 flex items-center justify-center shadow-lg relative overflow-hidden"
               >
-                <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-transparent pointer-events-none" />
+                <div className="absolute inset-0 bg-gradient-to-br from-white/12 via-transparent to-transparent pointer-events-none" />
                 <span className="font-sans text-xl font-bold tracking-tight text-white drop-shadow">
                   ST
                 </span>
@@ -211,7 +211,7 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({ onComplete }) => {
                   animate={{ opacity: 1, y: 0 }}
                   exit={isReducedMotion ? { opacity: 0 } : { opacity: 0, y: -4 }}
                   transition={{ duration: 0.2 }}
-                  className="text-xs text-white/80 font-medium tracking-wider uppercase"
+                  className="text-[11px] text-white/80 font-medium tracking-[0.2em] uppercase"
                 >
                   {STATUS_STEPS[statusIdx]}
                 </motion.div>

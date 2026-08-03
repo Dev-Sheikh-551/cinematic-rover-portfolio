@@ -34,7 +34,7 @@ export interface Project {
 export interface SkillNode {
   id: string;
   name: string;
-  category: 'core' | 'frontend' | 'backend' | 'animation' | 'tooling';
+  category: 'core' | 'frontend' | 'backend' | 'animation' | 'tooling' | 'statedata';
   level: number; // 0 to 100
   x: number;
   y: number;
