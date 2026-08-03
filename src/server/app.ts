@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  *
  * Express Application Pipeline Setup
- * Configures middleware, API v1 routes, Auth.js, Swagger documentation, and global error handling.
+ * Configures security headers, rate limiters, middleware, API v1 routes, Auth.js, and global error handling.
  */
 
 import express, { Express, Request, Response } from 'express';
@@ -13,30 +13,46 @@ import { env } from './config/env';
 import { logger } from './logger';
 import { requestIdMiddleware } from './middleware/requestId';
 import { errorHandler } from './middleware/errorHandler';
+import {
+  securityHeaders,
+  globalApiLimiter,
+  authLimiter,
+  sanitizeInputMiddleware,
+} from './middleware/security';
 import { healthRouter } from './routes/health';
 import { docsRouter } from './routes/docs';
 import { contactRouter } from '../features/contact/contact.routes';
 import { testimonialRouter } from '../features/testimonial/testimonial.routes';
+import { analyticsRouter } from '../features/analytics/analytics.routes';
 import { authHandler } from './auth';
 import { sendError } from './response';
 
 export function createApp(): Express {
   const app = express();
 
-  // Required for Auth.js to trust proxy headers (X-Forwarded-For etc.)
-  app.set('trust proxy', true);
+  // Disable powered-by header to prevent framework fingerprinting
+  app.disable('x-powered-by');
 
-  // 1. Core Middleware
+  // Trust proxy headers for Cloud Run / Vercel / Nginx load balancers
+  app.set("trust proxy", process.env.NODE_ENV === "production" ? 1 : false);
+
+  // 1. Security Headers (Helmet)
+  app.use(securityHeaders);
+
+  // 2. CORS & Body Parsing
   app.use(
     cors({
       origin: env.CORS_ORIGIN,
-      credentials: true, // Required for session cookies to be sent cross-origin
+      credentials: true,
     })
   );
-  app.use(express.json({ limit: '1mb' }));
-  app.use(express.urlencoded({ extended: true }));
+  app.use(express.json({ limit: '100kb' }));
+  app.use(express.urlencoded({ extended: true, limit: '100kb' }));
 
-  // 2. Request ID & Structured Pino HTTP Logger
+  // 3. Input Sanitization
+  app.use(sanitizeInputMiddleware);
+
+  // 4. Request ID & Pino Logging
   app.use(requestIdMiddleware);
   app.use(
     pinoHttp({
@@ -50,21 +66,22 @@ export function createApp(): Express {
     })
   );
 
-  // 3. Auth.js — handles /api/auth/* (signin, callback, signout, session)
-  app.use('/api/auth', authHandler);
+  // 5. Auth.js Endpoints with Auth Rate Limiting
+  app.use('/api/auth', authLimiter, authHandler);
 
-  // 4. Documentation Endpoint
+  // 6. OpenAPI Documentation Endpoint
   app.use('/docs', docsRouter);
 
-  // 5. API v1 Router Mounts
+  // 7. API v1 Router Mounts with Global API Rate Limiter
   const v1Router = express.Router();
   v1Router.use('/health', healthRouter);
   v1Router.use('/contact', contactRouter);
   v1Router.use('/testimonials', testimonialRouter);
+  v1Router.use('/analytics', analyticsRouter);
 
-  app.use('/api/v1', v1Router);
+  app.use('/api/v1', globalApiLimiter, v1Router);
 
-  // 6. 404 Catch-All Handler
+  // 8. 404 Catch-All Handler
   app.use((req: Request, res: Response) => {
     return sendError(
       res,
@@ -74,7 +91,7 @@ export function createApp(): Express {
     );
   });
 
-  // 7. Global Error Handler (must be last)
+  // 9. Global Error Handler (must be last)
   app.use(errorHandler);
 
   return app;

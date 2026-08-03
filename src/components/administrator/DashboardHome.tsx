@@ -42,21 +42,24 @@ interface DashboardHomeProps {
 export const DashboardHome: React.FC<DashboardHomeProps> = ({ onNavigate }) => {
   const [msgStats, setMsgStats] = useState({ unread: 0, total: 0 });
   const [testStats, setTestStats] = useState({ pending: 0, approved: 0, total: 0, averageRating: 5.0 });
+  const [analytics, setAnalytics] = useState({ totalViews: 0, uniqueVisitors: 0, ctaClicks: 0, projectClicks: 0 });
   const [health, setHealth] = useState<HealthData | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [msgRes, testRes, healthRes] = await Promise.all([
+        const [msgRes, testRes, healthRes, analyticsRes] = await Promise.all([
           fetch('/api/v1/contact/stats', { credentials: 'include' }).then((r) => r.json()),
           fetch('/api/v1/testimonials/stats', { credentials: 'include' }).then((r) => r.json()),
           fetch('/api/v1/health').then((r) => r.json()),
+          fetch('/api/v1/analytics/overview?timeframe=7d', { credentials: 'include' }).then((r) => r.json()),
         ]);
 
         if (msgRes.success) setMsgStats(msgRes.data);
         if (testRes.success) setTestStats(testRes.data);
         if (healthRes.success) setHealth(healthRes.data);
+        if (analyticsRes.success) setAnalytics(analyticsRes.data);
       } catch (err) {
         console.error('Failed to load dashboard metrics:', err);
       } finally {
@@ -186,39 +189,37 @@ export const DashboardHome: React.FC<DashboardHomeProps> = ({ onNavigate }) => {
           </LiquidGlass>
         </motion.div>
 
-        {/* Database Health Card */}
+        {/* Analytics Card */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.24, duration: 0.4 }}
-          onClick={() => onNavigate('system')}
-          className="cursor-pointer group"
         >
           <LiquidGlass
             radius="1.25rem"
             distortion={6}
             blur={16}
             tint={0.07}
-            interactive={true}
-            className="p-5 border border-white/10 group-hover:border-purple-500/40 transition-colors"
+            interactive={false}
+            className="p-5 border border-white/10"
           >
             <div className="flex items-center justify-between mb-3">
               <div className="w-9 h-9 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400">
                 <Cpu size={16} />
               </div>
-              <ArrowUpRight size={14} className="text-white/30 group-hover:text-purple-400 transition-colors" />
+              <span className="text-purple-400 text-xs font-mono font-bold">7d</span>
             </div>
 
             <p className="text-white/40 text-[11px] uppercase tracking-widest font-mono mb-1">
-              Database Latency
+              Portfolio Views
             </p>
             <p className="text-white text-3xl font-semibold font-sans mb-1">
-              {health?.database?.latencyMs !== undefined ? `${health.database.latencyMs}ms` : '—'}
+              {loading ? '—' : analytics.totalViews}
             </p>
             <div className="flex items-center gap-2">
               <CheckCircle size={12} className="text-emerald-400" />
               <span className="text-white/50 text-[12px] font-sans">
-                {health?.database?.status || 'checking...'}
+                {loading ? '...' : `${analytics.uniqueVisitors} unique visitors`}
               </span>
             </div>
           </LiquidGlass>

@@ -121,3 +121,15 @@ model Testimonial {
 
   @@map("testimonials")
 }
+
+model SiteAnalytics {
+  id        String   @id @default(uuid())
+  eventType String   @map("event_type")
+  path      String   @default("/")
+  metadata  String?  @db.Text
+  ipHash    String?  @map("ip_hash")
+  device    String?  @default("desktop")
+  createdAt DateTime @default(now())
+
+  @@map("site_analytics")
+}
