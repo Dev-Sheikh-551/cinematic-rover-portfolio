@@ -17,42 +17,95 @@
         "summary": "Health Diagnostic Check",
         "description": "Returns full system diagnostics including API state, database ping latency, uptime, and memory usage.",
         "responses": {
-          "200": {
-            "description": "System Healthy",
-            "content": {
-              "application/json": {
-                "example": {
-                  "success": true,
-                  "data": {
-                    "api": {
-                      "status": "ok",
-                      "version": "1.0.0",
-                      "environment": "development",
-                      "uptimeSeconds": 120,
-                      "timestamp": "2026-08-03T11:00:00.000Z"
-                    },
-                    "database": {
-                      "status": "connected",
-                      "latencyMs": 4,
-                      "provider": "postgresql"
-                    },
-                    "system": {
-                      "nodeVersion": "v22.14.0",
-                      "platform": "win32",
-                      "memory": {
-                        "rss": "45.20 MB",
-                        "heapTotal": "28.50 MB",
-                        "heapUsed": "18.30 MB"
-                      }
-                    }
-                  }
+          "200": { "description": "System Healthy" },
+          "503": { "description": "Database Connection Issue" }
+        }
+      }
+    },
+    "/contact": {
+      "post": {
+        "summary": "Submit Contact Message",
+        "description": "Public endpoint for visitors to transmit portfolio contact inquiries.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["name", "email", "message"],
+                "properties": {
+                  "name": { "type": "string", "example": "Sarah Connor" },
+                  "email": { "type": "string", "example": "sarah@cyberdyne.com" },
+                  "subject": { "type": "string", "example": "System Architecture Inquiry" },
+                  "message": { "type": "string", "example": "Hello Sheikh, I was wowed by your cinematic rover portfolio." },
+                  "website": { "type": "string", "description": "Honeypot field — leave empty" }
                 }
               }
             }
-          },
-          "503": {
-            "description": "Database Connection Issue"
           }
+        },
+        "responses": {
+          "201": { "description": "Message Transmitted Successfully" },
+          "400": { "description": "Validation Error" },
+          "429": { "description": "Rate Limit Exceeded" }
+        }
+      },
+      "get": {
+        "summary": "List Contact Messages (Admin Only)",
+        "responses": {
+          "200": { "description": "Messages List" },
+          "401": { "description": "Unauthorized" }
+        }
+      }
+    },
+    "/testimonials": {
+      "get": {
+        "summary": "Get Approved Testimonials (Public)",
+        "description": "Returns approved reviews for display on the portfolio.",
+        "parameters": [
+          { "name": "featured", "in": "query", "schema": { "type": "boolean" } }
+        ],
+        "responses": {
+          "200": { "description": "Approved Testimonials List" }
+        }
+      },
+      "post": {
+        "summary": "Submit Testimonial (Public)",
+        "description": "Submits a review for administrator moderation approval.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["name", "role", "company", "rating", "text"],
+                "properties": {
+                  "name": { "type": "string", "example": "John Doe" },
+                  "role": { "type": "string", "example": "Staff Engineer" },
+                  "company": { "type": "string", "example": "Stripe" },
+                  "rating": { "type": "integer", "example": 5 },
+                  "text": { "type": "string", "example": "Sheikh delivered a world-class WebGL experience!" },
+                  "avatarUrl": { "type": "string" },
+                  "linkedinUrl": { "type": "string" },
+                  "portfolioUrl": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Testimonial Submitted for Moderation" },
+          "400": { "description": "Validation Error" },
+          "429": { "description": "Rate Limit Exceeded" }
+        }
+      }
+    },
+    "/testimonials/admin": {
+      "get": {
+        "summary": "List Testimonials Queue (Admin Only)",
+        "responses": {
+          "200": { "description": "Moderation Queue List" },
+          "401": { "description": "Unauthorized" }
         }
       }
     }

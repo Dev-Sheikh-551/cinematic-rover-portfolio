@@ -134,11 +134,30 @@ export const ContactTerminal: React.FC = () => {
         ]);
         return;
       }
-      sound.playConfirm();
+      const payload = {
+        name: formData.name,
+        email: formData.email,
+        message: trimmedMsg,
+      };
       setFormData(prev => ({ ...prev, message: trimmedMsg }));
       printedStepsRef.current.clear();
       setProcessingLines([]);
       setStage('processing');
+
+      // Dispatch async payload transmission to backend API endpoint
+      fetch('/api/v1/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      }).then(async (res) => {
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          const errorMsg = errData?.error?.message || 'BACKEND API UNREACHABLE';
+          setProcessingLines(prev => [...prev, `SYS_ERR: ${errorMsg.toUpperCase()}`]);
+        }
+      }).catch((err) => {
+        console.warn('Contact API dispatch warning:', err);
+      });
     }
   };
 

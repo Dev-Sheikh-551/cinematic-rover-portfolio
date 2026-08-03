@@ -3,10 +3,10 @@
  * SPDX-License-Identifier: Apache-2.0
  *
  * Express Application Pipeline Setup
- * Configures middleware, API v1 routes, Swagger documentation, and global error handling.
+ * Configures middleware, API v1 routes, Auth.js, Swagger documentation, and global error handling.
  */
 
-import express, { Express, Request, Response, NextFunction } from 'express';
+import express, { Express, Request, Response } from 'express';
 import cors from 'cors';
 import { pinoHttp } from 'pino-http';
 import { env } from './config/env';
@@ -15,16 +15,22 @@ import { requestIdMiddleware } from './middleware/requestId';
 import { errorHandler } from './middleware/errorHandler';
 import { healthRouter } from './routes/health';
 import { docsRouter } from './routes/docs';
+import { contactRouter } from '../features/contact/contact.routes';
+import { testimonialRouter } from '../features/testimonial/testimonial.routes';
+import { authHandler } from './auth';
 import { sendError } from './response';
 
 export function createApp(): Express {
   const app = express();
 
+  // Required for Auth.js to trust proxy headers (X-Forwarded-For etc.)
+  app.set('trust proxy', true);
+
   // 1. Core Middleware
   app.use(
     cors({
       origin: env.CORS_ORIGIN,
-      credentials: true,
+      credentials: true, // Required for session cookies to be sent cross-origin
     })
   );
   app.use(express.json({ limit: '1mb' }));
@@ -44,16 +50,21 @@ export function createApp(): Express {
     })
   );
 
-  // 3. Documentation Endpoint
+  // 3. Auth.js — handles /api/auth/* (signin, callback, signout, session)
+  app.use('/api/auth', authHandler);
+
+  // 4. Documentation Endpoint
   app.use('/docs', docsRouter);
 
-  // 4. API v1 Router Mounts
+  // 5. API v1 Router Mounts
   const v1Router = express.Router();
   v1Router.use('/health', healthRouter);
+  v1Router.use('/contact', contactRouter);
+  v1Router.use('/testimonials', testimonialRouter);
 
   app.use('/api/v1', v1Router);
 
-  // 5. 404 Catch-All Handler
+  // 6. 404 Catch-All Handler
   app.use((req: Request, res: Response) => {
     return sendError(
       res,
@@ -63,7 +74,7 @@ export function createApp(): Express {
     );
   });
 
-  // 6. Global Error Handler
+  // 7. Global Error Handler (must be last)
   app.use(errorHandler);
 
   return app;
