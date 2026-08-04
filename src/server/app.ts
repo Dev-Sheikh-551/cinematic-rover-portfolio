@@ -39,20 +39,15 @@ export function createApp(): Express {
   // 1. Security Headers (Helmet)
   app.use(securityHeaders);
 
-  // 2. CORS & Body Parsing
+  // 2. CORS
   app.use(
     cors({
       origin: env.CORS_ORIGIN,
       credentials: true,
     })
   );
-  app.use(express.json({ limit: '100kb' }));
-  app.use(express.urlencoded({ extended: true, limit: '100kb' }));
 
-  // 3. Input Sanitization
-  app.use(sanitizeInputMiddleware);
-
-  // 4. Request ID & Pino Logging
+  // 3. Request ID & Pino Logging
   app.use(requestIdMiddleware);
   app.use(
     pinoHttp({
@@ -66,8 +61,13 @@ export function createApp(): Express {
     })
   );
 
-  // 5. Auth.js Endpoints with Auth Rate Limiting
+  // 4. Auth.js Endpoints (Must be mounted before express.json / urlencoded to preserve raw request stream for Web API Request parsing)
   app.use('/api/auth', authLimiter, authHandler);
+
+  // 4. Body Parsing & Input Sanitization
+  app.use(express.json({ limit: '100kb' }));
+  app.use(express.urlencoded({ extended: true, limit: '100kb' }));
+  app.use(sanitizeInputMiddleware);
 
   // 6. OpenAPI Documentation Endpoint
   app.use('/docs', docsRouter);

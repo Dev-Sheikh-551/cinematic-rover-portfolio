@@ -36,8 +36,12 @@ export const AdminLogin: React.FC<AdminLoginProps> = () => {
 
   const handleGoogleSignIn = () => {
     setIsLoading(true);
-    // Auth.js v5 Google sign-in endpoint — GET redirects to Google OAuth
-    window.location.href = '/api/auth/signin/google';
+    // Auth.js v5 Google sign-in endpoint requires a POST request
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = '/api/auth/signin/google';
+    document.body.appendChild(form);
+    form.submit();
   };
 
   return (
