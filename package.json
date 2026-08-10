@@ -9,6 +9,8 @@
     "dev:all": "concurrently --names \"API,WEB\" --prefix-colors \"cyan,magenta\" \"npm run dev:server\" \"npm run dev\"",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
+    "db:rls": "tsx scripts/enable-rls.ts",
+    "db:seed": "tsx scripts/seed-testimonials.ts",
     "build": "vite build",
     "preview": "vite preview",
     "clean": "rm -rf dist server.js",
