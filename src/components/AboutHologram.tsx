@@ -3,8 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React from 'react';
-import { motion } from 'motion/react';
+import React, { useEffect, useRef } from 'react';
 import { sound } from './SoundManager';
 import { LiquidGlass } from './LiquidGlass';
 import { FileText } from 'lucide-react';
@@ -13,26 +12,49 @@ import { SpecularButton } from './SpecularButton';
 
 interface AboutHologramProps {
   scrollProgress: number; // For scroll-tied assembly offsets
+  liveScrollRef?: React.MutableRefObject<number>;
   onOpenResume?: () => void;
 }
 
-export const AboutHologram: React.FC<AboutHologramProps> = ({ scrollProgress, onOpenResume }) => {
-  const focusStart = 0.15;
-  const focusEnd = 0.33;
+export const AboutHologram: React.FC<AboutHologramProps> = ({ scrollProgress, liveScrollRef, onOpenResume }) => {
+  const mainPanelRef = useRef<HTMLDivElement | null>(null);
+  const focusCardRef = useRef<HTMLDivElement | null>(null);
 
-  let segmentProgress = 0;
-  if (scrollProgress >= focusStart && scrollProgress <= focusEnd) {
-    segmentProgress = (scrollProgress - focusStart) / (focusEnd - focusStart);
-  } else if (scrollProgress > focusEnd) {
-    segmentProgress = 1;
-  }
+  useEffect(() => {
+    let animId: number;
 
-  const isAssembled = scrollProgress >= focusStart && scrollProgress <= focusEnd;
-  const assembleFactor = isAssembled ? Math.sin(segmentProgress * Math.PI) : 0;
+    const updateAssembly = () => {
+      const p = liveScrollRef ? liveScrollRef.current : scrollProgress;
+      const focusStart = 0.14;
+      const focusEnd = 0.28;
 
-  const offsetX = (1 - assembleFactor) * 80;
-  const offsetY = (1 - assembleFactor) * -50;
-  const rotationZ = (1 - assembleFactor) * 8;
+      let segmentProgress = 0;
+      if (p >= focusStart && p <= focusEnd) {
+        segmentProgress = (p - focusStart) / (focusEnd - focusStart);
+      } else if (p > focusEnd) {
+        segmentProgress = 1;
+      }
+
+      const isAssembled = p >= focusStart && p <= focusEnd;
+      const assembleFactor = isAssembled ? Math.sin(segmentProgress * Math.PI) : 0;
+
+      const offsetX = (1 - assembleFactor) * 80;
+      const offsetY = (1 - assembleFactor) * -50;
+      const rotationZ = (1 - assembleFactor) * 8;
+
+      if (mainPanelRef.current) {
+        mainPanelRef.current.style.transform = `translate3d(${offsetX}px, ${offsetY * 0.5}px, 0px) rotate(${rotationZ * 0.2}deg)`;
+      }
+      if (focusCardRef.current) {
+        focusCardRef.current.style.transform = `translate3d(${offsetX * -0.6}px, ${offsetY * 0.8}px, 0px) rotate(${rotationZ * -0.3}deg)`;
+      }
+
+      animId = requestAnimationFrame(updateAssembly);
+    };
+
+    animId = requestAnimationFrame(updateAssembly);
+    return () => cancelAnimationFrame(animId);
+  }, [liveScrollRef, scrollProgress]);
 
   const handlePanelHover = () => {
     sound.playTick();
@@ -55,14 +77,9 @@ export const AboutHologram: React.FC<AboutHologramProps> = ({ scrollProgress, on
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start relative">
 
         {/* MAIN EDITORIAL GLASS CONTAINER (8 cols) */}
-        <motion.div
-          className="lg:col-span-8"
-          style={{
-            x: offsetX,
-            y: offsetY * 0.5,
-            rotate: rotationZ * 0.2,
-          }}
-          transition={{ type: 'spring', stiffness: 50, damping: 16 }}
+        <div
+          ref={mainPanelRef}
+          className="lg:col-span-8 will-change-transform transition-transform duration-100 ease-out"
           onMouseEnter={handlePanelHover}
         >
           <LiquidGlass radius="1.5rem" distortion={12} blur={0} tint={0.08} className="p-8 cursor-default group space-y-6">
@@ -82,17 +99,20 @@ export const AboutHologram: React.FC<AboutHologramProps> = ({ scrollProgress, on
               </div>
 
               {onOpenResume && (
-                <SpecularButton
-                  size="sm"
-                  radius={12}
-                  baseColor="#064e3b"
-                  lineColor="#10b98160"
-                  textColor="#a7f3d0"
-                  onClick={() => { onOpenResume(); sound.playConfirm(); }}
-                >
-                  <FileText size={14} className="text-emerald-400" />
-                  <span>View Resume</span>
-                </SpecularButton>
+                <div className="shrink-0 pt-1 sm:pt-0">
+                  <SpecularButton
+                    size="sm"
+                    radius={12}
+                    baseColor="#064e3b"
+                    lineColor="#10b98160"
+                    textColor="#a7f3d0"
+                    className="whitespace-nowrap shrink-0"
+                    onClick={() => { onOpenResume(); sound.playConfirm(); }}
+                  >
+                    <FileText size={14} className="text-emerald-400 shrink-0" />
+                    <span className="whitespace-nowrap font-medium">View Resume</span>
+                  </SpecularButton>
+                </div>
               )}
             </div>
 
@@ -125,17 +145,12 @@ export const AboutHologram: React.FC<AboutHologramProps> = ({ scrollProgress, on
             </div>
 
           </LiquidGlass>
-        </motion.div>
+        </div>
 
         {/* CURRENT FOCUS CARD (4 cols) */}
-        <motion.div
-          className="lg:col-span-4 flex flex-col gap-4"
-          style={{
-            x: offsetX * -0.6,
-            y: offsetY * 0.8,
-            rotate: rotationZ * -0.3,
-          }}
-          transition={{ type: 'spring', stiffness: 45, damping: 14 }}
+        <div
+          ref={focusCardRef}
+          className="lg:col-span-4 flex flex-col gap-4 will-change-transform transition-transform duration-100 ease-out"
           onMouseEnter={handlePanelHover}
         >
           <LiquidGlass radius="1.5rem" distortion={10} blur={0} tint={0.07} className="p-6 cursor-default">
@@ -167,7 +182,7 @@ export const AboutHologram: React.FC<AboutHologramProps> = ({ scrollProgress, on
               </div>
             </div>
           </LiquidGlass>
-        </motion.div>
+        </div>
 
       </div>
     </div>

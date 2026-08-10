@@ -281,7 +281,8 @@ export default function App() {
       tl.to({}, { duration: 1.0 }, 0);
       tl.fromTo("#hero-content",
         { autoAlpha: 1, y: 0, scale: 1, force3D: true },
-        { autoAlpha: 0, y: -60, scale: 0.97, duration: TIMELINE_OFFSETS.hero.end, ease: "power2.inOut" }, 0
+        { autoAlpha: 0, y: -60, scale: 0.97, duration: 0.05, ease: "power2.in" },
+        TIMELINE_OFFSETS.hero.end - 0.05
       );
       addSection(tl, "#about-content", TIMELINE_OFFSETS.about.start, TIMELINE_OFFSETS.about.end, 0.04, 0.04, 1.0);
       addSection(tl, "#skills-content", TIMELINE_OFFSETS.skills.start, TIMELINE_OFFSETS.skills.end, 0.04, 0.04, 1.0);
@@ -702,6 +703,7 @@ export default function App() {
             <div className="scanner-line absolute left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 pointer-events-none z-30" />
             <AboutHologram
               scrollProgress={scrollProgress}
+              liveScrollRef={canvasScrollRef}
               onOpenResume={() => setIsResumeOpen(true)}
             />
           </div>
