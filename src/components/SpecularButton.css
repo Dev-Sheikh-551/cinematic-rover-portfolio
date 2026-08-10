@@ -1,0 +1,48 @@
+/**
+ * @license
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * SpecularButton CSS Styles
+ */
+
+.specular-button {
+  position: relative;
+  isolation: isolate;
+  background-origin: border-box;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  transition: transform 0.15s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.specular-button:hover {
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+.specular-shine-layer {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 1;
+  background: radial-gradient(
+    circle at var(--specular-x, 50%) var(--specular-y, 50%),
+    rgba(255, 255, 255, calc(0.4 * var(--specular-opacity, 1))) 0%,
+    rgba(255, 255, 255, calc(0.1 * var(--specular-opacity, 1))) calc(var(--specular-size, 10%) * 2),
+    transparent 60%
+  );
+  opacity: var(--specular-opacity, 0.3);
+  transition: opacity var(--specular-speed, 0.35s) ease, background 0.1s ease;
+}
+
+.specular-content {
+  position: relative;
+  z-index: 2;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .specular-button {
+    transition: none !important;
+  }
+  .specular-shine-layer {
+    display: none !important;
+  }
+}

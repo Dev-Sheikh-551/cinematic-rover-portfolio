@@ -26,8 +26,10 @@ const envSchema = z.object({
   // AUTH_SECRET: Signs session tokens. Generate with:
   //   node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
   AUTH_SECRET: z.string().min(32, 'AUTH_SECRET must be at least 32 characters'),
-  // AUTH_URL: Base URL of the API server (not Vite). Used for OAuth callbacks.
-  AUTH_URL: z.string().url().default('http://localhost:3001'),
+  // AUTH_URL: Full base URL of the Auth.js handler including basePath.
+  // Must include /api/auth to avoid env-url-basepath-redundant warnings.
+  // Example: http://localhost:3001/api/auth
+  AUTH_URL: z.string().url().default('http://localhost:3001/api/auth'),
 
   // ── Google OAuth ─────────────────────────────────────────────────────────
   GOOGLE_CLIENT_ID: z.string().min(1, 'GOOGLE_CLIENT_ID is required (Google Cloud Console)'),

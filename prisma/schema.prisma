@@ -101,6 +101,8 @@ model ContactMessage {
   createdAt DateTime      @default(now())
   updatedAt DateTime      @updatedAt
 
+  @@index([status, createdAt])
+  @@index([isSpam])
   @@map("contact_messages")
 }
 
@@ -119,6 +121,8 @@ model Testimonial {
   createdAt    DateTime          @default(now())
   updatedAt    DateTime          @updatedAt
 
+  @@index([status, createdAt])
+  @@index([status, isFeatured])
   @@map("testimonials")
 }
 
@@ -131,5 +135,6 @@ model SiteAnalytics {
   device    String?  @default("desktop")
   createdAt DateTime @default(now())
 
+  @@index([eventType, createdAt])
   @@map("site_analytics")
 }

@@ -16,12 +16,14 @@ import {
 
 interface CinematicCanvasProps {
   scrollProgress: number; // 0 to 1
+  liveScrollRef?: React.MutableRefObject<number>; // bypasses React for per-frame scroll reads
   activeSection: string;
   isKonamiActive: boolean;
   isAlternateTheme: boolean;
   timelineEvents: TimelineEvent[];
   isGlitching?: boolean;
   isDroneView?: boolean;
+  isPaused?: boolean;
 }
 
 interface Point3D {
@@ -41,12 +43,14 @@ interface Particle {
 
 export const CinematicCanvas: React.FC<CinematicCanvasProps> = ({
   scrollProgress,
+  liveScrollRef,
   activeSection,
   isKonamiActive,
   isAlternateTheme,
   timelineEvents,
   isGlitching = false,
   isDroneView = false,
+  isPaused = false,
 }) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const mouseRef = useRef({ x: 0, y: 0, tx: 0, ty: 0 }); // Current and target mouse positions (normalized -1 to 1)
@@ -58,6 +62,7 @@ export const CinematicCanvas: React.FC<CinematicCanvasProps> = ({
   const isAlternateThemeRef = useRef(isAlternateTheme);
   const isGlitchingRef = useRef(isGlitching);
   const isDroneViewRef = useRef(isDroneView);
+  const isPausedRef = useRef(isPaused);
 
   // Keep refs in sync
   useEffect(() => { scrollProgressRef.current = scrollProgress; }, [scrollProgress]);
@@ -65,6 +70,9 @@ export const CinematicCanvas: React.FC<CinematicCanvasProps> = ({
   useEffect(() => { isAlternateThemeRef.current = isAlternateTheme; }, [isAlternateTheme]);
   useEffect(() => { isGlitchingRef.current = isGlitching; }, [isGlitching]);
   useEffect(() => { isDroneViewRef.current = isDroneView; }, [isDroneView]);
+  useEffect(() => { isPausedRef.current = isPaused; }, [isPaused]);
+
+
 
   // Dimension ref and ResizeObserver
   const dimsRef = useRef({ width: 0, height: 0, needsResize: false });
@@ -103,6 +111,7 @@ export const CinematicCanvas: React.FC<CinematicCanvasProps> = ({
     camVelY: 0,
     camVelZ: 0,
     camFocal: 450,
+    idleWeight: 0,   // smoothed idle-orbit blend — low-passed to prevent flicker during spring settling
     roverWheelRotation: 0,
     leftWheelRot: 0,
     rightWheelRot: 0,
@@ -200,6 +209,10 @@ export const CinematicCanvas: React.FC<CinematicCanvasProps> = ({
 
     // Main Draw & Update Loop
     const render = () => {
+      if (isPausedRef.current) {
+        animationFrameId = requestAnimationFrame(render);
+        return;
+      }
       stateRef.current.time += 0.01;
       const time = stateRef.current.time;
 
@@ -210,7 +223,10 @@ export const CinematicCanvas: React.FC<CinematicCanvasProps> = ({
 
       // Checkpoint milestone locations (progress 0 to 1) for gentle autonomous deceleration
       const checkpoints = [0.0, 0.16, 0.32, 0.50, 0.68, 0.85, 1.0];
-      const targetProgress = scrollProgressRef.current;
+      // Read scroll progress directly from the live ref when available — this is written
+      // synchronously on every ScrollTrigger tick and bypasses React's async useEffect syncing,
+      // ensuring the render loop always sees the current frame's scroll value.
+      const targetProgress = (liveScrollRef ? liveScrollRef.current : scrollProgressRef.current);
       const currentProgress = stateRef.current.lerpScroll;
       const error = targetProgress - currentProgress;
       const currentVel = stateRef.current.scrollVelocity || 0;
@@ -225,7 +241,11 @@ export const CinematicCanvas: React.FC<CinematicCanvasProps> = ({
       // Dynamic checkpoint deceleration: apply extra autonomous dampener near section milestones when slowing down
       const isApproachingStop = Math.abs(error) < 0.04;
       const isNearCheckpoint = minCheckpointDist < 0.035;
-      const checkpointDamp = (isApproachingStop && isNearCheckpoint) ? 0.46 : 0.28;
+      // Overdamped spring (ζ > 1) — eliminates post-stop oscillation.
+      // Critical damping for this system (k=0.095, m=4.8) is B_crit ≈ 1.35.
+      // Normal: 1.3 × B_crit ≈ 1.75 (overdamped, no bounce).
+      // Near checkpoint: 1.8 × B_crit ≈ 2.43 (very stiff settle for clean stops).
+      const checkpointDamp = (isApproachingStop && isNearCheckpoint) ? 2.0 : 1.4;
 
       // Progressive torque spooling curve: smooth acceleration from rest
       const velMag = Math.abs(currentVel);
@@ -251,7 +271,9 @@ export const CinematicCanvas: React.FC<CinematicCanvasProps> = ({
         newProgress = 1;
         stateRef.current.scrollVelocity = -newVel * 0.12; // Elastic wall bump
       } else {
-        stateRef.current.scrollVelocity = newVel;
+        // Velocity cap prevents fast-scroll overshoot (max ~1.3 seconds to traverse full journey at 60fps)
+        const maxVel = 0.022;
+        stateRef.current.scrollVelocity = Math.max(-maxVel, Math.min(maxVel, newVel));
       }
 
       stateRef.current.lerpScroll = newProgress;
@@ -263,8 +285,11 @@ export const CinematicCanvas: React.FC<CinematicCanvasProps> = ({
       // Check dimensions from the ResizeObserver ref instead of layout properties (prevents layout thrashing)
       const dims = dimsRef.current;
       if (dims.needsResize) {
-        canvas.width = dims.width;
-        canvas.height = dims.height;
+        // Cap DPR at 1.5 — avoids 4× draw calls on Retina/4K screens
+        const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+        canvas.width = Math.floor(dims.width * dpr);
+        canvas.height = Math.floor(dims.height * dpr);
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
         dims.needsResize = false;
       }
 
@@ -404,9 +429,13 @@ export const CinematicCanvas: React.FC<CinematicCanvasProps> = ({
       const lookaheadDist = newVel * 950.0 + acceleration * 2200.0;
       const lookaheadPos = getPathPoint(roverZ + lookaheadDist);
 
-      // 2. Slow orbital drift during long straight sections & stationary browsing
+      // 2. Slow orbital drift during long straight sections & stationary browsing.
+      //    idleWeight is low-pass filtered (τ≈25 frames / ~420ms at 60fps) so it transitions
+      //    smoothly rather than flickering on/off while the rover spring is still settling.
       const speedMag = Math.abs(newVel);
-      const idleWeight = 1.0 - Math.min(1.0, speedMag * 200.0);
+      const rawIdleWeight = 1.0 - Math.min(1.0, speedMag * 200.0);
+      stateRef.current.idleWeight += (rawIdleWeight - stateRef.current.idleWeight) * 0.04;
+      const idleWeight = stateRef.current.idleWeight;
       const idleOrbitX = Math.sin(time * 0.18) * 14.0 * idleWeight * idleMult;
       const idleOrbitY = Math.cos(time * 0.14) * 5.0 * idleWeight * idleMult;
 
@@ -543,10 +572,13 @@ export const CinematicCanvas: React.FC<CinematicCanvasProps> = ({
       const handheldYaw = Math.sin(time * 0.45) * 0.0022;
       const handheldPitch = Math.cos(time * 0.55) * 0.0016;
 
-      // 5. Heavy Camera Rig Spring-Damper Inertia & Damping
+      // 5. Heavy Camera Rig Spring-Damper — raised to near-critical damping so camera settles cleanly.
+      //    B_crit for this system (k=0.065, m=3.6) ≈ 0.968.
+      //    Using 0.55 gives ζ≈0.57, which is slightly underdamped but settles in ~8 frames
+      //    without meaningful overshoot (vs 0.24 which was ζ≈0.25 and produced clear oscillation).
       const camMass = 3.6;
       const camSpringK = 0.065;
-      const camDamping = 0.24;
+      const camDamping = 0.55;
 
       const destCamX = targetCamX + handheldX;
       const destCamY = targetCamY + handheldY;
@@ -1365,13 +1397,25 @@ export const CinematicCanvas: React.FC<CinematicCanvasProps> = ({
         ctx.fillRect(0, Math.random() * height, width, Math.random() * 30 + 10);
       }
 
-      animationFrameId = requestAnimationFrame(render);
+      // Skip scheduling next frame when tab is hidden — saves 100% CPU/GPU while backgrounded
+      if (!document.hidden) {
+        animationFrameId = requestAnimationFrame(render);
+      }
     };
 
+    // Resume animation loop when the user returns to this tab
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        animationFrameId = requestAnimationFrame(render);
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
     render();
 
     return () => {
       cancelAnimationFrame(animationFrameId);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, []);
 

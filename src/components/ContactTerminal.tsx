@@ -8,6 +8,7 @@ import { motion } from 'motion/react';
 import { Terminal, Send, Cpu, CheckCircle, RefreshCw } from 'lucide-react';
 import { sound } from './SoundManager';
 import { PacketTransmission } from './PacketTransmission';
+import { SpecularButton } from './SpecularButton';
 
 interface TerminalLine {
   text: string;
@@ -36,6 +37,8 @@ export const ContactTerminal: React.FC = () => {
   const [processingLines, setProcessingLines] = useState<string[]>([]);
   const [isFocused, setIsFocused] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<number>(0);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [confirmedMessageId, setConfirmedMessageId] = useState<string | null>(null);
   
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
@@ -134,30 +137,76 @@ export const ContactTerminal: React.FC = () => {
         ]);
         return;
       }
-      const payload = {
-        name: formData.name,
-        email: formData.email,
-        message: trimmedMsg,
-      };
-      setFormData(prev => ({ ...prev, message: trimmedMsg }));
-      printedStepsRef.current.clear();
-      setProcessingLines([]);
-      setStage('processing');
 
-      // Dispatch async payload transmission to backend API endpoint
+      if (isSubmitting) return; // Prevent duplicate submissions
+
+      const finalFormData = { ...formData, message: trimmedMsg };
+      setFormData(finalFormData);
+      setIsSubmitting(true);
+
+      // Show a brief waiting indicator while the API call is in flight
+      setHistory(prev => [
+        ...prev,
+        { text: 'PAYLOAD QUEUED — CONTACTING HELIOS CORE...', type: 'info', timestamp: getTimestamp() }
+      ]);
+
+      // Submit to real backend — await response before starting animation
       fetch('/api/v1/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      }).then(async (res) => {
-        if (!res.ok) {
-          const errData = await res.json().catch(() => ({}));
-          const errorMsg = errData?.error?.message || 'BACKEND API UNREACHABLE';
-          setProcessingLines(prev => [...prev, `SYS_ERR: ${errorMsg.toUpperCase()}`]);
-        }
-      }).catch((err) => {
-        console.warn('Contact API dispatch warning:', err);
-      });
+        credentials: 'include',
+        body: JSON.stringify({
+          name: finalFormData.name,
+          email: finalFormData.email,
+          message: trimmedMsg,
+          website: '', // honeypot — always empty for humans
+        }),
+      })
+        .then(async (res) => {
+          const body = await res.json().catch(() => ({}));
+
+          if (!res.ok) {
+            // Rate limited
+            if (res.status === 429) {
+              sound.playError();
+              setHistory(prev => [
+                ...prev,
+                { text: 'SYS_ALERT: TRANSMISSION LIMIT REACHED. STAND DOWN FOR 15 MINUTES.', type: 'warning', timestamp: getTimestamp() },
+                { text: 'TRANSMISSION_LOG (Enter your Message):', type: 'prompt', timestamp: getTimestamp() }
+              ]);
+            } else {
+              // Other API error
+              const errMsg = body?.error?.message || 'UNKNOWN API FAILURE';
+              sound.playError();
+              setHistory(prev => [
+                ...prev,
+                { text: `SYS_ERR: ${errMsg.toUpperCase()}`, type: 'warning', timestamp: getTimestamp() },
+                { text: 'TRANSMISSION_LOG (Enter your Message):', type: 'prompt', timestamp: getTimestamp() }
+              ]);
+            }
+            setIsSubmitting(false);
+            return;
+          }
+
+          // Success — store the DB message ID and begin the animation
+          const messageId: string | undefined = body?.data?.id;
+          if (messageId) setConfirmedMessageId(messageId);
+
+          sound.playConfirm();
+          printedStepsRef.current.clear();
+          setProcessingLines([]);
+          setStage('processing');
+          setIsSubmitting(false);
+        })
+        .catch(() => {
+          sound.playError();
+          setHistory(prev => [
+            ...prev,
+            { text: 'SYS_ERR: NETWORK UNREACHABLE — CHECK CONNECTIVITY AND RETRY.', type: 'warning', timestamp: getTimestamp() },
+            { text: 'TRANSMISSION_LOG (Enter your Message):', type: 'prompt', timestamp: getTimestamp() }
+          ]);
+          setIsSubmitting(false);
+        });
     }
   };
 
@@ -204,6 +253,8 @@ export const ContactTerminal: React.FC = () => {
     setFormData({ name: '', email: '', message: '' });
     setProcessingLines([]);
     setUploadProgress(0);
+    setIsSubmitting(false);
+    setConfirmedMessageId(null);
     printedStepsRef.current.clear();
     setStage('name');
     setHistory([
@@ -307,14 +358,22 @@ export const ContactTerminal: React.FC = () => {
                 </div>
                 <div className="text-white/60">SENDER: {formData.name}</div>
                 <div className="text-white/60">LINK_MAIL: {formData.email}</div>
-                <div className="text-white/60">ENCRYPT_KEY: AES_GCM_SHA256_V2</div>
-                <button 
+                {confirmedMessageId && (
+                  <div className="text-white/35">MSG_ID: {confirmedMessageId}</div>
+                )}
+                <div className="text-white/60">STATUS: RECEIVED — DATABASE CONFIRMED</div>
+                <SpecularButton 
+                  size="sm"
+                  radius={8}
+                  baseColor="#1f2937"
+                  lineColor="#374151"
+                  textColor="#ffffff"
                   onClick={resetTerminal}
-                  className="mt-3 flex items-center gap-1.5 px-3 py-1.5 bg-white/10 hover:bg-white text-white hover:text-black hover:font-bold rounded text-[9px] font-sans font-medium tracking-wider transition-all duration-200"
+                  className="mt-3"
                 >
                   <RefreshCw size={10} />
-                  NEW TRANSMISSION
-                </button>
+                  <span>NEW TRANSMISSION</span>
+                </SpecularButton>
               </motion.div>
             )}
 
@@ -330,16 +389,22 @@ export const ContactTerminal: React.FC = () => {
                   onKeyDown={handleKeyPress}
                   onFocus={() => setIsFocused(true)}
                   onBlur={() => setIsFocused(false)}
-                  className="flex-1 bg-transparent border-none outline-none text-sky-400 caret-white select-all text-[11px] font-mono py-0.5"
+                  disabled={isSubmitting}
+                  className="flex-1 bg-transparent border-none outline-none focus:outline-none focus:ring-0 focus:border-none text-sky-400 caret-white select-all text-[11px] font-mono py-0.5 disabled:opacity-50"
                   placeholder={
+                    isSubmitting ? 'TRANSMITTING...' :
                     stage === 'name' ? 'Enter identity name...' :
                     stage === 'email' ? 'Enter verification email...' :
                     'Type transmission log...'
                   }
                   autoFocus
                 />
-                <button type="submit" className="text-sky-400 hover:text-white p-1 rounded transition-colors">
-                  <Send size={10} />
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="text-sky-400 hover:text-white p-1 rounded transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  {isSubmitting ? <Cpu size={10} className="animate-spin" /> : <Send size={10} />}
                 </button>
               </form>
             )}

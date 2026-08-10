@@ -7,9 +7,9 @@ import React from 'react';
 import { motion } from 'motion/react';
 import { sound } from './SoundManager';
 import { LiquidGlass } from './LiquidGlass';
-
-
-import { FileText, ExternalLink } from 'lucide-react';
+import { FileText } from 'lucide-react';
+import { personalData, experienceData } from '../data';
+import { SpecularButton } from './SpecularButton';
 
 interface AboutHologramProps {
   scrollProgress: number; // For scroll-tied assembly offsets
@@ -38,14 +38,16 @@ export const AboutHologram: React.FC<AboutHologramProps> = ({ scrollProgress, on
     sound.playTick();
   };
 
+  const currentRole = experienceData[0]?.position ?? 'Frontend Developer Intern';
+
   return (
     <div id="about-container" className="relative w-full max-w-6xl mx-auto px-4 md:px-8 py-20 min-h-[85vh] flex flex-col gap-12 justify-center">
 
       {/* SECTION TITLE HEADER */}
       <div className="text-center lg:text-left">
-        <div className="text-xs font-mono text-white/35 tracking-widest mb-2.5">// Who I Am</div>
+        <div className="text-xs font-mono text-white/35 tracking-widest mb-2">// Who I Am</div>
         <h2 className="text-4xl md:text-5xl font-sans tracking-tight text-white font-bold leading-[1.1] text-balance">
-          Developer, Craftsman &amp; Creator
+          {personalData.title} &amp; Creator
         </h2>
       </div>
 
@@ -67,56 +69,58 @@ export const AboutHologram: React.FC<AboutHologramProps> = ({ scrollProgress, on
 
             {/* Bio Header */}
             <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
-              <div className="space-y-2.5 max-w-xl">
+              <div className="space-y-3 max-w-2xl">
                 <h3 className="text-2xl font-sans font-medium text-white leading-snug">
-                  Hi, I'm <span className="font-semibold text-white underline underline-offset-8 decoration-white/20">Sheikh Tijan Touray</span>
+                  Hi, I'm <span className="font-semibold text-white underline underline-offset-8 decoration-white/20">{personalData.name}</span>
                 </h3>
-                <p className="text-white/78 text-[15px] leading-[1.75] font-light">
-                  I'm a frontend engineer from The Gambia driven by a passion for building clean, fast, and memorable web experiences. I specialize in modern React ecosystems, Next.js, TypeScript, and fine-tuned animations.
+                <p className="text-white/85 text-[14px] leading-[1.75] font-light">
+                  {personalData.storyNarrative.paragraph1}
+                </p>
+                <p className="text-white/75 text-[13.5px] leading-[1.75] font-light">
+                  {personalData.storyNarrative.paragraph2}
                 </p>
               </div>
 
               {onOpenResume && (
-                <button
+                <SpecularButton
+                  size="sm"
+                  radius={12}
+                  baseColor="#064e3b"
+                  lineColor="#10b98160"
+                  textColor="#a7f3d0"
                   onClick={() => { onOpenResume(); sound.playConfirm(); }}
-                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-emerald-500/40 bg-emerald-500/10 hover:bg-emerald-500/20 active:scale-[0.96] text-emerald-300 font-mono text-xs font-medium transition-all duration-200 shrink-0 cursor-pointer shadow-lg hover:shadow-emerald-500/10"
                 >
                   <FileText size={14} className="text-emerald-400" />
                   <span>View Resume</span>
-                </button>
+                </SpecularButton>
               )}
             </div>
 
-            {/* Design Philosophy & Motivation */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-white/10">
-              <div>
-                <div className="text-[10px] font-mono text-white/40 uppercase tracking-widest mb-1">DESIGN PHILOSOPHY</div>
-                <p className="text-white/80 text-xs leading-relaxed italic">
-                  "Building with intention, craftsmanship, and clarity. Code should perform as beautifully as it looks."
-                </p>
-              </div>
-
-              <div>
-                <div className="text-[10px] font-mono text-white/40 uppercase tracking-widest mb-1">WHAT MOTIVATES ME</div>
-                <p className="text-white/75 text-xs leading-relaxed">
-                  Creating interfaces that react effortlessly to human input, bridging high design with rock-solid engineering.
-                </p>
-              </div>
+            {/* Key Philosophy Editorial Quote */}
+            <div className="p-4 rounded-xl bg-white/4 border-l-2 border-emerald-400 space-y-1">
+              <div className="text-[10px] font-mono text-emerald-400 uppercase tracking-widest font-semibold">KEY PHILOSOPHY</div>
+              <p className="text-white/90 text-xs md:text-sm leading-relaxed italic font-sans">
+                "{personalData.keyPhilosophy}"
+              </p>
             </div>
 
-            {/* Sub-panel stats footer */}
-            <div className="grid grid-cols-3 gap-3 pt-4 border-t border-white/10">
+            {/* Sub-panel stats footer — Real Metrics */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
               <LiquidGlass radius="0.75rem" distortion={5} blur={0} tint={0.05} className="text-center p-3">
-                <div className="text-2xl font-mono text-white font-semibold tabular-nums">5+</div>
-                <div className="text-[9px] font-mono text-white/40 uppercase tracking-widest mt-0.5">Years Code</div>
+                <div className="text-sm md:text-base font-mono text-emerald-300 font-semibold">Growing</div>
+                <div className="text-[9px] font-mono text-white/40 uppercase tracking-widest mt-0.5">Projects Built</div>
               </LiquidGlass>
               <LiquidGlass radius="0.75rem" distortion={5} blur={0} tint={0.05} className="text-center p-3">
-                <div className="text-2xl font-mono text-white font-semibold tabular-nums">24+</div>
-                <div className="text-[9px] font-mono text-white/40 uppercase tracking-widest mt-0.5">Deployments</div>
+                <div className="text-sm md:text-base font-mono text-white font-semibold">2024</div>
+                <div className="text-[9px] font-mono text-white/40 uppercase tracking-widest mt-0.5">Learning Since</div>
               </LiquidGlass>
               <LiquidGlass radius="0.75rem" distortion={5} blur={0} tint={0.05} className="text-center p-3">
-                <div className="text-2xl font-mono text-white font-semibold tabular-nums">100%</div>
-                <div className="text-[9px] font-mono text-white/40 uppercase tracking-widest mt-0.5">Crafted</div>
+                <div className="text-xs md:text-sm font-mono text-sky-300 font-semibold truncate" title={currentRole}>{currentRole}</div>
+                <div className="text-[9px] font-mono text-white/40 uppercase tracking-widest mt-0.5">Current Role</div>
+              </LiquidGlass>
+              <LiquidGlass radius="0.75rem" distortion={5} blur={0} tint={0.05} className="text-center p-3">
+                <div className="text-xs md:text-sm font-mono text-purple-300 font-semibold truncate" title="Full-Stack">Full-Stack</div>
+                <div className="text-[9px] font-mono text-white/40 uppercase tracking-widest mt-0.5">Primary Focus</div>
               </LiquidGlass>
             </div>
 
@@ -142,23 +146,23 @@ export const AboutHologram: React.FC<AboutHologramProps> = ({ scrollProgress, on
 
             <div className="space-y-4 text-xs font-sans">
               <div className="p-3 rounded-xl bg-white/3 border border-white/5 space-y-1">
-                <div className="font-medium text-white">1. Modern Web &amp; 3D</div>
+                <div className="font-medium text-white">1. OceanNet Technologies</div>
                 <p className="text-white/60 text-[11px] leading-relaxed">
-                  Building immersive web applications with React, Next.js, and Three.js.
+                  Frontend Developer Intern contributing to production web applications and modern user interfaces.
                 </p>
               </div>
 
               <div className="p-3 rounded-xl bg-white/3 border border-white/5 space-y-1">
-                <div className="font-medium text-white">2. Cinematic UX</div>
+                <div className="font-medium text-white">2. Full-Stack Growth</div>
                 <p className="text-white/60 text-[11px] leading-relaxed">
-                  Exploring high-end motion, micro-interactions, and fluid state management.
+                  Self-studying backend fundamentals: Express, PostgreSQL, Prisma ORM, and API security.
                 </p>
               </div>
 
               <div className="p-3 rounded-xl bg-white/3 border border-white/5 space-y-1">
-                <div className="font-medium text-white">3. Impactful Products</div>
+                <div className="font-medium text-white">3. Practical Products</div>
                 <p className="text-white/60 text-[11px] leading-relaxed">
-                  Seeking opportunities to collaborate on production-ready digital tools.
+                  Learning by building ambitious tools, interactive experiences, and production-grade software.
                 </p>
               </div>
             </div>

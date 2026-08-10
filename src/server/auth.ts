@@ -46,7 +46,6 @@ declare module '@auth/core/types' {
 
 export const authConfig: Omit<AuthConfig, 'raw'> = {
   secret: env.AUTH_SECRET,
-  basePath: '/api/auth',
   adapter: PrismaAdapter(prisma),
 
   // Providers — add new providers here without restructuring auth logic

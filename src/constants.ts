@@ -4,10 +4,11 @@
  */
 
 export const TIMELINE_OFFSETS = {
-  hero: { start: 0.00, end: 0.16 },
-  about: { start: 0.16, end: 0.32 },
-  skills: { start: 0.32, end: 0.50 },
-  projects: { start: 0.50, end: 0.68 },
-  timeline: { start: 0.68, end: 0.85 },
-  contact: { start: 0.85, end: 1.00 }
+  hero:         { start: 0.00, end: 0.14 },
+  about:        { start: 0.14, end: 0.28 },
+  skills:       { start: 0.28, end: 0.44 },
+  projects:     { start: 0.44, end: 0.58 },
+  testimonials: { start: 0.58, end: 0.72 },
+  timeline:     { start: 0.72, end: 0.87 },
+  contact:      { start: 0.87, end: 1.00 },
 };

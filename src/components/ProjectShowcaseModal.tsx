@@ -25,6 +25,7 @@ import {
   Terminal
 } from 'lucide-react';
 import { LiquidGlass } from './LiquidGlass';
+import { SpecularButton } from './SpecularButton';
 import { Project } from '../types';
 import { sound } from './SoundManager';
 
@@ -358,28 +359,37 @@ export const ProjectShowcaseModal: React.FC<ProjectShowcaseModalProps> = ({ proj
             {/* FOOTER ACTIONS */}
             <div className="mt-8 pt-5 border-t border-white/10 flex flex-wrap items-center justify-between gap-4 font-mono text-xs">
               <div className="flex items-center gap-3">
-                {project.demoUrl && (
-                  <a
-                    href={project.demoUrl}
+                {(project.liveUrl || project.demoUrl) && (
+                  <SpecularButton
+                    size="sm"
+                    radius={12}
+                    baseColor="#10b981"
+                    lineColor="#34d399"
+                    textColor="#000000"
+                    intensity={1.2}
+                    href={(project.liveUrl || project.demoUrl)!}
                     target="_blank"
                     rel="noreferrer"
-                    className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 active:scale-[0.96] text-black font-bold flex items-center gap-2 transition-all duration-150 shadow-lg cursor-pointer"
                   >
-                    <span>Live Demo</span>
+                    <span>View Live Site</span>
                     <ExternalLink size={14} />
-                  </a>
+                  </SpecularButton>
                 )}
 
                 {project.githubUrl && (
-                  <a
+                  <SpecularButton
+                    size="sm"
+                    radius={12}
+                    baseColor="#262626"
+                    lineColor="#ffffff33"
+                    textColor="#ffffff"
                     href={project.githubUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 active:scale-[0.96] border border-white/20 text-white font-medium flex items-center gap-2 transition-all duration-150 cursor-pointer"
                   >
                     <Github size={14} />
                     <span>Repository</span>
-                  </a>
+                  </SpecularButton>
                 )}
               </div>
 

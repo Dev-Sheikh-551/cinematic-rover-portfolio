@@ -17,6 +17,7 @@ export interface DeveloperNotes {
 export interface Project {
   id: string;
   title: string;
+  category: string;
   description: string;
   challenge?: string;
   solution?: string;
@@ -24,10 +25,17 @@ export interface Project {
   role: string;
   period: string;
   tech: string[];
-  demoUrl: string;
   githubUrl: string;
+  liveUrl?: string | null;
+  demoUrl?: string | null;
   modelType: 'lander' | 'satellite' | 'drone' | 'radar';
   imageUrl?: string;
+  featured?: boolean;
+  architecture?: {
+    challenge: string;
+    solution: string;
+    impact: string;
+  };
   developerNotes?: DeveloperNotes;
 }
 

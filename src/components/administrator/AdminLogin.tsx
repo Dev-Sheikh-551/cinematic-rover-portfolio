@@ -14,12 +14,13 @@ interface AdminLoginProps {
   onAuthenticated?: () => void;
 }
 
-type ErrorType = 'AccessDenied' | 'OAuthSignin' | 'OAuthCallback' | 'Default' | null;
+type ErrorType = 'AccessDenied' | 'OAuthSignin' | 'OAuthCallback' | 'MissingCSRF' | 'Default' | null;
 
 const ERROR_MESSAGES: Record<Exclude<ErrorType, null>, string> = {
   AccessDenied: 'Access denied. Only the authorized administrator may sign in.',
   OAuthSignin: 'Failed to initiate Google sign-in. Please try again.',
   OAuthCallback: 'Failed to complete Google sign-in. Please try again.',
+  MissingCSRF: 'Security token expired. Please refresh the page and try again.',
   Default: 'An authentication error occurred. Please try again.',
 };
 
@@ -34,14 +35,41 @@ export const AdminLogin: React.FC<AdminLoginProps> = () => {
     if (errorParam) setError(errorParam);
   }, []);
 
-  const handleGoogleSignIn = () => {
+  const handleGoogleSignIn = async () => {
     setIsLoading(true);
-    // Auth.js v5 Google sign-in endpoint requires a POST request
-    const form = document.createElement('form');
-    form.method = 'POST';
-    form.action = '/api/auth/signin/google';
-    document.body.appendChild(form);
-    form.submit();
+    try {
+      // Auth.js v5 requires a CSRF token in every POST sign-in request.
+      // Fetch it from the server, then submit a proper form with it included.
+      const csrfRes = await fetch('/api/auth/csrf');
+      if (!csrfRes.ok) throw new Error('Failed to fetch CSRF token');
+      const { csrfToken } = await csrfRes.json() as { csrfToken: string };
+
+      const form = document.createElement('form');
+      form.method = 'POST';
+      form.action = '/api/auth/signin/google';
+
+      // Required: CSRF token
+      const csrfInput = document.createElement('input');
+      csrfInput.type = 'hidden';
+      csrfInput.name = 'csrfToken';
+      csrfInput.value = csrfToken;
+      form.appendChild(csrfInput);
+
+      // Tell Auth.js where to redirect after successful login.
+      // window.location.origin is "http://localhost:3000" in dev (Vite) — Auth.js
+      // will redirect here after the Google callback, landing back on the SPA.
+      const callbackInput = document.createElement('input');
+      callbackInput.type = 'hidden';
+      callbackInput.name = 'callbackUrl';
+      callbackInput.value = `${window.location.origin}/administrator`;
+      form.appendChild(callbackInput);
+
+      document.body.appendChild(form);
+      form.submit();
+    } catch {
+      setIsLoading(false);
+      setError('OAuthSignin');
+    }
   };
 
   return (

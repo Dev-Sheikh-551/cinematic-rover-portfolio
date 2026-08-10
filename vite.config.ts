@@ -15,7 +15,19 @@ export default defineConfig(() => {
       proxy: {
         '/api': {
           target: 'http://127.0.0.1:3001',
-          changeOrigin: true,
+          // changeOrigin must be FALSE so Express sees Host: localhost:3000.
+          // Auth.js constructs the OAuth redirect_uri from req.get('host').
+          // With changeOrigin:true, host becomes "127.0.0.1:3001" → redirect_uri
+          // uses 127.0.0.1, Google redirects there directly (bypassing Vite), and
+          // the PKCE verifier cookie (which was set on the localhost domain) is
+          // missing → InvalidCheck → error=Configuration.
+          // With changeOrigin:false, host stays "localhost:3000" → redirect_uri uses
+          // localhost:3000, Google redirects through Vite, the PKCE cookie is present,
+          // and all post-auth error redirects also land on Vite (not Express 404).
+          //
+          // ⚠️  Google Cloud Console: Authorized redirect URI must be:
+          //     http://localhost:3000/api/auth/callback/google
+          changeOrigin: false,
         },
         '/docs': {
           target: 'http://127.0.0.1:3001',

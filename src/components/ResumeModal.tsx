@@ -29,36 +29,38 @@ import {
 } from 'lucide-react';
 import { sound } from './SoundManager';
 import { LiquidGlass } from './LiquidGlass';
+import { SpecularButton } from './SpecularButton';
+import { personalData } from '../data/personal';
+import { experienceData } from '../data/experience';
+import { educationData } from '../data/education';
+import { skillsData } from '../data/skills';
 
 interface ResumeModalProps {
   isOpen: boolean;
   onClose: () => void;
-  pdfUrl?: string;
+  docUrl?: string;
 }
 
 /**
- * HEAD-request check: returns true only if the server responds with a
- * Content-Type that starts with "application/pdf". This prevents the
- * iframe/embed from ever receiving the SPA's index.html.
+ * HEAD-request check: returns true if file exists on server.
  */
-async function checkPdfExists(url: string): Promise<boolean> {
+async function checkFileExists(url: string): Promise<boolean> {
   try {
     const res = await fetch(url, { method: 'HEAD', cache: 'no-store' });
-    const ct = res.headers.get('content-type') ?? '';
-    return res.ok && ct.startsWith('application/pdf');
+    return res.ok;
   } catch {
     return false;
   }
 }
 
-/** React hook that checks PDF availability once per URL. */
-function usePdfAvailable(url: string, shouldCheck: boolean) {
+/** React hook that checks document availability once per URL. */
+function useFileAvailable(url: string, shouldCheck: boolean) {
   const [status, setStatus] = useState<'checking' | 'available' | 'unavailable'>('checking');
 
   useEffect(() => {
     if (!shouldCheck) return;
     setStatus('checking');
-    checkPdfExists(url).then(ok => setStatus(ok ? 'available' : 'unavailable'));
+    checkFileExists(url).then(ok => setStatus(ok ? 'available' : 'unavailable'));
   }, [url, shouldCheck]);
 
   return status;
@@ -67,13 +69,13 @@ function usePdfAvailable(url: string, shouldCheck: boolean) {
 export const ResumeModal: React.FC<ResumeModalProps> = ({
   isOpen,
   onClose,
-  pdfUrl = '/resume.pdf',
+  docUrl = '/Sheikh_Tijan_Touray_Resume.docx',
 }) => {
   const [viewMode, setViewMode] = useState<'pdf' | 'digital'>('digital');
   const embedRef = useRef<HTMLEmbedElement>(null);
 
-  // Only run the availability check when the user switches to PDF mode.
-  const pdfStatus = usePdfAvailable(pdfUrl, viewMode === 'pdf' && isOpen);
+  // Check file availability when user opens document view
+  const docStatus = useFileAvailable(docUrl, isOpen);
 
   // Close on Escape key press
   useEffect(() => {
@@ -88,21 +90,19 @@ export const ResumeModal: React.FC<ResumeModalProps> = ({
 
   const handlePrint = () => {
     sound.playConfirm();
-    // For embedded PDFs the browser's native print dialog handles the document.
-    // We open the PDF in a new tab so the user can print it without issues.
-    window.open(pdfUrl, '_blank', 'noopener,noreferrer');
+    window.open(docUrl, '_blank', 'noopener,noreferrer');
   };
 
   const handleOpenNewTab = () => {
     sound.playConfirm();
-    window.open(pdfUrl, '_blank', 'noopener,noreferrer');
+    window.open(docUrl, '_blank', 'noopener,noreferrer');
   };
 
   const handleDownload = () => {
     sound.playConfirm();
     const link = document.createElement('a');
-    link.href = pdfUrl;
-    link.download = 'Sheikh_Tijan_Touray_Resume.pdf';
+    link.href = docUrl;
+    link.download = 'Sheikh_Tijan_Touray_Resume.docx';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -182,40 +182,38 @@ export const ResumeModal: React.FC<ResumeModalProps> = ({
                         : 'text-white/40 hover:text-white/70'
                     }`}
                   >
-                    <Eye size={11} />
-                    <span>PDF</span>
+                    <FileText size={11} />
+                    <span>Document</span>
                   </button>
                 </div>
 
-                {/* Download PDF */}
-                <button
+                {/* Download Document */}
+                <SpecularButton
+                  size="sm"
+                  radius={12}
+                  baseColor="#064e3b"
+                  lineColor="#10b98160"
+                  textColor="#a7f3d0"
                   onClick={handleDownload}
-                  className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl border border-white/15 bg-white/5 hover:bg-white/15 active:scale-[0.96] text-white font-mono text-[10px] transition-all duration-150 cursor-pointer"
-                  title="Download PDF"
+                  title="Download Resume (.docx)"
                 >
                   <Download size={12} className="text-emerald-400" />
-                  <span className="hidden sm:inline">Download</span>
-                </button>
-
-                {/* Print */}
-                <button
-                  onClick={handlePrint}
-                  className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl border border-white/15 bg-white/5 hover:bg-white/15 active:scale-[0.96] text-white font-mono text-[10px] transition-all duration-150 cursor-pointer"
-                  title="Print Document"
-                >
-                  <Printer size={12} className="text-sky-400" />
-                  <span className="hidden sm:inline">Print</span>
-                </button>
+                  <span className="hidden sm:inline">Download (.docx)</span>
+                </SpecularButton>
 
                 {/* Open in New Tab */}
-                <button
+                <SpecularButton
+                  size="sm"
+                  radius={12}
+                  baseColor="#262626"
+                  lineColor="#ffffff20"
+                  textColor="#ffffff"
                   onClick={handleOpenNewTab}
-                  className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl border border-white/15 bg-white/5 hover:bg-white/15 active:scale-[0.96] text-white font-mono text-[10px] transition-all duration-150 cursor-pointer"
                   title="Open in New Tab"
                 >
                   <ExternalLink size={12} className="text-purple-400" />
-                  <span className="hidden md:inline">New Tab</span>
-                </button>
+                  <span className="hidden md:inline">Open File</span>
+                </SpecularButton>
 
                 {/* Close Button */}
                 <button
@@ -231,63 +229,53 @@ export const ResumeModal: React.FC<ResumeModalProps> = ({
             {/* VIEWER CONTENT AREA */}
             <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar relative rounded-2xl bg-black/40 border border-white/10">
               
-              {/* MODE 1: EMBEDDED PDF PREVIEW */}
+              {/* MODE 1: DOCUMENT DOWNLOAD / VIEW CARD */}
               {viewMode === 'pdf' && (
-                <div className="w-full h-full min-h-[500px] flex flex-col items-center justify-center relative">
-
-                  {/* Checking availability */}
-                  {pdfStatus === 'checking' && (
-                    <div className="flex flex-col items-center gap-3 text-white/50 font-mono text-xs">
-                      <div className="w-6 h-6 rounded-full border-2 border-white/20 border-t-emerald-400 animate-spin" />
-                      <span>Loading PDF…</span>
+                <div className="w-full h-full min-h-[450px] flex flex-col items-center justify-center relative p-6">
+                  <div className="flex flex-col items-center gap-6 p-8 text-center max-w-md border border-white/10 bg-white/[0.03] backdrop-blur-md rounded-2xl shadow-2xl">
+                    <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-400/30 text-emerald-400">
+                      <FileText size={36} />
                     </div>
-                  )}
-
-                  {/* PDF confirmed — render with <embed> (never loads HTML) */}
-                  {pdfStatus === 'available' && (
-                    <embed
-                      ref={embedRef}
-                      src={pdfUrl}
-                      type="application/pdf"
-                      title="Sheikh Tijan Touray Resume PDF"
-                      className="w-full h-full min-h-[500px] rounded-2xl border-none"
-                    />
-                  )}
-
-                  {/* PDF not found — clean fallback, never loads the app */}
-                  {pdfStatus === 'unavailable' && (
-                    <div className="flex flex-col items-center gap-5 p-8 text-center max-w-sm">
-                      <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-400/20 text-amber-400">
-                        <AlertCircle size={28} />
-                      </div>
-                      <div className="space-y-1.5">
-                        <p className="font-sans font-semibold text-white/90 text-sm">
-                          PDF not available
-                        </p>
-                        <p className="font-mono text-[11px] text-white/45 leading-relaxed">
-                          The resume PDF hasn't been uploaded yet.<br />
-                          Use the Interactive view or download when available.
-                        </p>
-                      </div>
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => { setViewMode('digital'); sound.playTick(); }}
-                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-white/15 bg-white/5 hover:bg-white/15 text-white font-mono text-[11px] transition-all cursor-pointer"
-                        >
-                          <Eye size={12} />
-                          <span>Interactive View</span>
-                        </button>
-                        <button
-                          onClick={handleOpenNewTab}
-                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-emerald-400/30 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 font-mono text-[11px] transition-all cursor-pointer"
-                        >
-                          <ExternalLink size={12} />
-                          <span>Try Direct Link</span>
-                        </button>
-                      </div>
+                    
+                    <div className="space-y-2">
+                      <h4 className="font-sans font-bold text-white text-lg tracking-tight">
+                        Sheikh Tijan Touray Resume
+                      </h4>
+                      <p className="font-mono text-xs text-emerald-400 tracking-wide">
+                        Verified Document: Sheikh_Tijan_Touray_Resume.docx
+                      </p>
+                      <p className="font-sans text-xs text-white/60 leading-relaxed pt-1">
+                        Professional resume file is ready for direct download and viewing.
+                      </p>
                     </div>
-                  )}
 
+                    <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+                      <SpecularButton
+                        size="md"
+                        radius={14}
+                        baseColor="#10b981"
+                        lineColor="#34d399"
+                        textColor="#000000"
+                        intensity={1.2}
+                        onClick={handleDownload}
+                      >
+                        <Download size={14} />
+                        <span>Download Resume (.docx)</span>
+                      </SpecularButton>
+
+                      <SpecularButton
+                        size="md"
+                        radius={14}
+                        baseColor="#262626"
+                        lineColor="#ffffff25"
+                        textColor="#ffffff"
+                        onClick={() => { setViewMode('digital'); sound.playTick(); }}
+                      >
+                        <Eye size={14} />
+                        <span>Interactive View</span>
+                      </SpecularButton>
+                    </div>
+                  </div>
                 </div>
               )}
 
@@ -299,21 +287,21 @@ export const ResumeModal: React.FC<ResumeModalProps> = ({
                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-white/10">
                     <div>
                       <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
-                        Sheikh Tijan Touray
+                        {personalData.name}
                       </h2>
                       <div className="text-emerald-400 font-mono text-xs mt-1 font-medium tracking-wide">
-                        Frontend Engineer &amp; Interactive Web Developer
+                        {personalData.title}
                       </div>
                     </div>
 
                     <div className="font-mono text-xs space-y-1 text-white/70">
                       <div className="flex items-center gap-2">
                         <MapPin size={12} className="text-emerald-400" />
-                        <span>The Gambia</span>
+                        <span>{personalData.location}</span>
                       </div>
                       <div className="flex items-center gap-2">
                         <Globe size={12} className="text-sky-400" />
-                        <span>sheikhtijan.dev</span>
+                        <a href={`mailto:${personalData.email}`} className="hover:text-white transition-colors">{personalData.email}</a>
                       </div>
                     </div>
                   </div>
@@ -321,78 +309,80 @@ export const ResumeModal: React.FC<ResumeModalProps> = ({
                   {/* Summary */}
                   <div className="space-y-2">
                     <div className="font-mono text-[10px] text-white/40 uppercase tracking-widest font-bold">
-                      // Executive Summary
+                      // Profile
                     </div>
                     <p className="text-[15px] text-white/80 leading-[1.75] font-light">
-                      Frontend engineer driven by craftsmanship, modern web standards, and fine-tuned interactive design. Proven track record of building production React/Next.js storefronts, WebGL/Canvas physics integrations, state architectures, and responsive UI systems.
+                      {personalData.bioSummary}
                     </p>
                   </div>
 
                   {/* Skills Grid */}
                   <div className="space-y-3">
                     <div className="font-mono text-[10px] text-white/40 uppercase tracking-widest font-bold">
-                      // Technical Core
+                      // Technical Skills
                     </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 font-mono text-xs">
-                      <div className="p-3 rounded-xl border border-white/10 bg-white/4 space-y-1">
-                        <div className="text-sky-400 font-bold">Frontend</div>
-                        <div className="text-[11px] text-white/70">React, Next.js, TypeScript, Tailwind CSS</div>
-                      </div>
-
-                      <div className="p-3 rounded-xl border border-white/10 bg-white/4 space-y-1">
-                        <div className="text-emerald-400 font-bold">Animation &amp; 3D</div>
-                        <div className="text-[11px] text-white/70">Three.js, WebGL, GSAP, Framer Motion</div>
-                      </div>
-
-                      <div className="p-3 rounded-xl border border-white/10 bg-white/4 space-y-1">
-                        <div className="text-purple-400 font-bold">Backend &amp; Data</div>
-                        <div className="text-[11px] text-white/70">Node.js, Express, PostgreSQL, Prisma</div>
-                      </div>
-
-                      <div className="p-3 rounded-xl border border-white/10 bg-white/4 space-y-1">
-                        <div className="text-amber-400 font-bold">Tooling</div>
-                        <div className="text-[11px] text-white/70">Git, GitHub, Docker, Vite, Figma</div>
-                      </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 font-mono text-xs">
+                      {skillsData.map((cat, i) => (
+                        <div key={i} className="p-3 rounded-xl border border-white/10 bg-white/[0.04] space-y-1.5">
+                          <div className={`font-bold ${
+                            i === 0 ? 'text-sky-400' : i === 1 ? 'text-emerald-400' : 'text-purple-400'
+                          }`}>{cat.label}</div>
+                          <div className="text-[11px] text-white/70 leading-relaxed">
+                            {cat.skills.map(s => s.name).join(', ')}
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </div>
 
-                  {/* Experience Chronology */}
+                  {/* Experience */}
                   <div className="space-y-4">
                     <div className="font-mono text-[10px] text-white/40 uppercase tracking-widest font-bold flex items-center gap-2">
                       <Briefcase size={12} className="text-emerald-400" />
-                      <span>// Experience &amp; Projects</span>
+                      <span>// Experience</span>
                     </div>
 
                     <div className="space-y-3 font-sans">
-                      <div className="p-4 rounded-xl border border-white/10 bg-white/4 space-y-2">
-                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
-                          <div className="font-bold text-white text-sm">Independent &amp; Client Storefront Creator</div>
-                          <div className="font-mono text-[11px] text-emerald-400">2024 – Present</div>
+                      {experienceData.map((exp, i) => (
+                        <div key={i} className="p-4 rounded-xl border border-white/10 bg-white/[0.04] space-y-2">
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+                            <div>
+                              <div className="font-bold text-white text-sm">{exp.role}</div>
+                              <div className="font-mono text-[11px] text-white/50">{exp.company} · {exp.location}</div>
+                            </div>
+                            <div className="font-mono text-[11px] text-emerald-400 shrink-0">
+                              {exp.period}{exp.current ? ' · Current' : ''}
+                            </div>
+                          </div>
+                          <p className="text-xs text-white/70 leading-relaxed font-light">{exp.description}</p>
                         </div>
-                        <p className="text-xs text-white/70 leading-relaxed font-light">
-                          Engineered custom web applications featuring WebGL/Canvas 3D physics, glassmorphic UI systems, and optimized Next.js App Router performance for international clients.
-                        </p>
-                      </div>
+                      ))}
+                    </div>
+                  </div>
 
-                      <div className="p-4 rounded-xl border border-white/10 bg-white/4 space-y-2">
-                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
-                          <div className="font-bold text-white text-sm">Jasseh Code Camp (JCC) Bootcamp</div>
-                          <div className="font-mono text-[11px] text-sky-400">2024</div>
-                        </div>
-                        <p className="text-xs text-white/70 leading-relaxed font-light">
-                          Mastered team Git workflows, production state architecture, custom hooks, and strict TypeScript interfaces during intensive hands-on bootcamps.
-                        </p>
-                      </div>
+                  {/* Education */}
+                  <div className="space-y-4">
+                    <div className="font-mono text-[10px] text-white/40 uppercase tracking-widest font-bold flex items-center gap-2">
+                      <Sparkles size={12} className="text-sky-400" />
+                      <span>// Education & Training</span>
+                    </div>
 
-                      <div className="p-4 rounded-xl border border-white/10 bg-white/4 space-y-2">
-                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
-                          <div className="font-bold text-white text-sm">FreeCodeCamp &amp; Scrimba Certifications</div>
-                          <div className="font-mono text-[11px] text-purple-400">2023 – 2024</div>
+                    <div className="space-y-3 font-sans">
+                      {educationData.map((edu, i) => (
+                        <div key={i} className="p-4 rounded-xl border border-white/10 bg-white/[0.04] space-y-1.5">
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+                            <div>
+                              <div className="font-bold text-white text-sm">{edu.institution}</div>
+                              <div className="font-mono text-[11px] text-white/50">{edu.program}{edu.location ? ` · ${edu.location}` : ''}</div>
+                            </div>
+                            <div className={`font-mono text-[11px] shrink-0 ${
+                              edu.status === 'Completed' ? 'text-emerald-400' : 'text-amber-400'
+                            }`}>
+                              {edu.period} · {edu.status}
+                            </div>
+                          </div>
                         </div>
-                        <p className="text-xs text-white/70 leading-relaxed font-light">
-                          Completed comprehensive certifications in Responsive Web Design, JavaScript Algorithms &amp; Data Structures, and Modern React Systems.
-                        </p>
-                      </div>
+                      ))}
                     </div>
                   </div>
 

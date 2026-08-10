@@ -1,0 +1,25 @@
+/**
+ * @license
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * LogoLoop CSS styles — Hardware accelerated marquee track styling.
+ */
+
+.logo-loop-track {
+  will-change: transform;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.logo-loop-item {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  transform: translateZ(0);
+}
+
+/* Reduced motion preference override */
+@media (prefers-reduced-motion: reduce) {
+  .logo-loop-container {
+    overflow-x: auto;
+  }
+}
