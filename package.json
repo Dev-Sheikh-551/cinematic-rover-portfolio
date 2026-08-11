@@ -52,6 +52,7 @@
     "@types/pino": "^7.0.4",
     "@types/swagger-ui-express": "^4.1.8",
     "@types/yamljs": "^0.2.34",
+    "@vercel/node": "^5.9.8",
     "autoprefixer": "^10.4.21",
     "concurrently": "^10.0.4",
     "esbuild": "^0.25.0",

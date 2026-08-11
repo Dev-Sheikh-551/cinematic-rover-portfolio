@@ -1,0 +1,6 @@
+# Don't send these to Vercel's build environment — saves upload time and avoids conflicts.
+# The Express server source is bundled into api/index.ts by Vercel's Node runtime directly.
+node_modules
+dist
+coverage
+*.log
