@@ -8,8 +8,8 @@
  */
 
 import crypto from 'crypto';
-import { analyticsRepository, AnalyticsRepository } from './analytics.repository';
-import { TrackEventInput, AnalyticsQuery } from './analytics.validators';
+import { analyticsRepository, AnalyticsRepository } from './analytics.repository.js';
+import { TrackEventInput, AnalyticsQuery } from './analytics.validators.js';
 
 const ANONYMIZATION_SALT = process.env.JWT_SECRET || 'analytics-salt-key';
 

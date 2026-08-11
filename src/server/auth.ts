@@ -17,9 +17,9 @@ import { ExpressAuth } from '@auth/express';
 import { PrismaAdapter } from '@auth/prisma-adapter';
 import Google from '@auth/express/providers/google';
 import type { AuthConfig } from '@auth/core';
-import { prisma } from '../lib/prisma/db';
-import { env } from './config/env';
-import { logger } from './logger';
+import { prisma } from '../lib/prisma/db.js';
+import { env } from './config/env.js';
+import { logger } from './logger.js';
 
 // ── Type Augmentation ────────────────────────────────────────────────────────
 // Extends the default Auth.js session/user types with portfolio-specific fields

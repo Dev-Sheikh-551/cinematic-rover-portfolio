@@ -8,9 +8,9 @@
  */
 
 import { Request, Response } from 'express';
-import { analyticsService, AnalyticsService } from './analytics.service';
-import { trackEventSchema, analyticsQuerySchema } from './analytics.validators';
-import { sendSuccess } from '../../server/response';
+import { analyticsService, AnalyticsService } from './analytics.service.js';
+import { trackEventSchema, analyticsQuerySchema } from './analytics.validators.js';
+import { sendSuccess } from '../../server/response.js';
 
 export class AnalyticsController {
   constructor(private service: AnalyticsService = analyticsService) {}

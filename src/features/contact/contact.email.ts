@@ -9,8 +9,8 @@
  */
 
 import { Resend } from 'resend';
-import { env } from '../../server/config/env';
-import { logger } from '../../server/logger';
+import { env } from '../../server/config/env.js';
+import { logger } from '../../server/logger.js';
 
 export interface EmailNotificationPayload {
   name: string;

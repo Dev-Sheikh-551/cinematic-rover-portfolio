@@ -9,23 +9,23 @@
 import express, { Express, Request, Response } from 'express';
 import cors from 'cors';
 import { pinoHttp } from 'pino-http';
-import { env } from './config/env';
-import { logger } from './logger';
-import { requestIdMiddleware } from './middleware/requestId';
-import { errorHandler } from './middleware/errorHandler';
+import { env } from './config/env.js';
+import { logger } from './logger.js';
+import { requestIdMiddleware } from './middleware/requestId.js';
+import { errorHandler } from './middleware/errorHandler.js';
 import {
   securityHeaders,
   globalApiLimiter,
   authLimiter,
   sanitizeInputMiddleware,
-} from './middleware/security';
-import { healthRouter } from './routes/health';
-import { docsRouter } from './routes/docs';
-import { contactRouter } from '../features/contact/contact.routes';
-import { testimonialRouter } from '../features/testimonial/testimonial.routes';
-import { analyticsRouter } from '../features/analytics/analytics.routes';
-import { authHandler } from './auth';
-import { sendError } from './response';
+} from './middleware/security.js';
+import { healthRouter } from './routes/health.js';
+import { docsRouter } from './routes/docs.js';
+import { contactRouter } from '../features/contact/contact.routes.js';
+import { testimonialRouter } from '../features/testimonial/testimonial.routes.js';
+import { analyticsRouter } from '../features/analytics/analytics.routes.js';
+import { authHandler } from './auth.js';
+import { sendError } from './response.js';
 
 export function createApp(): Express {
   const app = express();

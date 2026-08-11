@@ -8,14 +8,14 @@
  * and public testimonial rendering.
  */
 
-import { testimonialRepository, TestimonialRepository } from './testimonial.repository';
+import { testimonialRepository, TestimonialRepository } from './testimonial.repository.js';
 import {
   CreateTestimonialInput,
   GetTestimonialsQuery,
   UpdateTestimonialStatusInput,
-} from './testimonial.validators';
-import { ApiError } from '../../server/apiError';
-import { logger } from '../../server/logger';
+} from './testimonial.validators.js';
+import { ApiError } from '../../server/apiError.js';
+import { logger } from '../../server/logger.js';
 
 export class TestimonialService {
   constructor(private repo: TestimonialRepository = testimonialRepository) {}

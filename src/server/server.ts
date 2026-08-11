@@ -6,10 +6,10 @@
  * Boots Express server, validates environment, logs system ready banner, and handles graceful shutdown.
  */
 
-import { env } from './config/env';
-import { logger } from './logger';
-import { createApp } from './app';
-import { prisma } from '../lib/prisma/db';
+import { env } from './config/env.js';
+import { logger } from './logger.js';
+import { createApp } from './app.js';
+import { prisma } from '../lib/prisma/db.js';
 
 async function bootstrap() {
   try {

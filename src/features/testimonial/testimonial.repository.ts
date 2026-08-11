@@ -7,9 +7,9 @@
  * Layer 2: Prisma database operations for Testimonial entities.
  */
 
-import { prisma } from '../../lib/prisma/db';
+import { prisma } from '../../lib/prisma/db.js';
 import { TestimonialStatus, Prisma } from '@prisma/client';
-import { CreateTestimonialInput, GetTestimonialsQuery } from './testimonial.validators';
+import { CreateTestimonialInput, GetTestimonialsQuery } from './testimonial.validators.js';
 
 export class TestimonialRepository {
   /**

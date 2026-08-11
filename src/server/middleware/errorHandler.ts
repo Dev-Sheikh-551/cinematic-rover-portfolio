@@ -8,9 +8,9 @@
 
 import { Request, Response, NextFunction } from 'express';
 import { ZodError } from 'zod';
-import { ApiError } from '../apiError';
-import { sendError } from '../response';
-import { logger } from '../logger';
+import { ApiError } from '../apiError.js';
+import { sendError } from '../response.js';
+import { logger } from '../logger.js';
 
 export function errorHandler(
   err: Error,

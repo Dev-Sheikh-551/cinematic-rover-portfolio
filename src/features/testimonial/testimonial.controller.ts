@@ -8,13 +8,13 @@
  */
 
 import { Request, Response } from 'express';
-import { testimonialService, TestimonialService } from './testimonial.service';
+import { testimonialService, TestimonialService } from './testimonial.service.js';
 import {
   createTestimonialSchema,
   getTestimonialsQuerySchema,
   updateTestimonialStatusSchema,
-} from './testimonial.validators';
-import { sendSuccess } from '../../server/response';
+} from './testimonial.validators.js';
+import { sendSuccess } from '../../server/response.js';
 
 export class TestimonialController {
   constructor(private service: TestimonialService = testimonialService) {}

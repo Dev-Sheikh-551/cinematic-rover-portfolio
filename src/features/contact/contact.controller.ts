@@ -9,13 +9,13 @@
  */
 
 import { Request, Response } from 'express';
-import { contactService, ContactService } from './contact.service';
+import { contactService, ContactService } from './contact.service.js';
 import {
   createContactSchema,
   getMessagesQuerySchema,
   updateStatusSchema,
-} from './contact.validators';
-import { sendSuccess } from '../../server/response';
+} from './contact.validators.js';
+import { sendSuccess } from '../../server/response.js';
 
 export class ContactController {
   constructor(private service: ContactService = contactService) {}

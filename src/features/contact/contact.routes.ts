@@ -9,9 +9,9 @@
 
 import { Router } from 'express';
 import rateLimit from 'express-rate-limit';
-import { contactController } from './contact.controller';
-import { asyncHandler } from '../../server/middleware/asyncHandler';
-import { requireAuth } from '../../server/middleware/authMiddleware';
+import { contactController } from './contact.controller.js';
+import { asyncHandler } from '../../server/middleware/asyncHandler.js';
+import { requireAuth } from '../../server/middleware/authMiddleware.js';
 
 export const contactRouter = Router();
 

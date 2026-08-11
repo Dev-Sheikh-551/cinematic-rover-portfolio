@@ -16,8 +16,8 @@ console.log('[Vercel] AUTH_SECRET exists:', !!process.env.AUTH_SECRET);
 console.log('[Vercel] GOOGLE_CLIENT_ID exists:', !!process.env.GOOGLE_CLIENT_ID);
 console.log('[Vercel] ADMIN_EMAIL exists:', !!process.env.ADMIN_EMAIL);
 
-import { createApp } from '../src/server/app';
-import { prisma } from '../src/lib/prisma/db';
+import { createApp } from '../src/server/app.js';
+import { prisma } from '../src/lib/prisma/db.js';
 import { Router, type Request, type Response } from 'express';
 
 console.log('[Vercel] createApp imported');

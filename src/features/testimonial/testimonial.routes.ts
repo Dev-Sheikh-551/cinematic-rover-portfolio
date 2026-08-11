@@ -9,9 +9,9 @@
 
 import { Router } from 'express';
 import rateLimit from 'express-rate-limit';
-import { testimonialController } from './testimonial.controller';
-import { asyncHandler } from '../../server/middleware/asyncHandler';
-import { requireAuth } from '../../server/middleware/authMiddleware';
+import { testimonialController } from './testimonial.controller.js';
+import { asyncHandler } from '../../server/middleware/asyncHandler.js';
+import { requireAuth } from '../../server/middleware/authMiddleware.js';
 
 export const testimonialRouter = Router();
 

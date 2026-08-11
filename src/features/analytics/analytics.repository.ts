@@ -7,8 +7,8 @@
  * Layer 2: Prisma database operations for recording events and aggregating site metrics.
  */
 
-import { prisma } from '../../lib/prisma/db';
-import { TrackEventInput } from './analytics.validators';
+import { prisma } from '../../lib/prisma/db.js';
+import { TrackEventInput } from './analytics.validators.js';
 
 export class AnalyticsRepository {
   /**

@@ -8,10 +8,10 @@
  */
 
 import { Router, Request, Response } from 'express';
-import { asyncHandler } from '../middleware/asyncHandler';
-import { sendSuccess, sendError } from '../response';
-import { prisma } from '../../lib/prisma/db';
-import { env } from '../config/env';
+import { asyncHandler } from '../middleware/asyncHandler.js';
+import { sendSuccess, sendError } from '../response.js';
+import { prisma } from '../../lib/prisma/db.js';
+import { env } from '../config/env.js';
 
 export const healthRouter = Router();
 

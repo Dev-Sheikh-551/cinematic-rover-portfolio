@@ -8,9 +8,9 @@
  * Decouples database operations from business logic and HTTP interfaces.
  */
 
-import { prisma } from '../../lib/prisma/db';
+import { prisma } from '../../lib/prisma/db.js';
 import { MessageStatus, Prisma } from '@prisma/client';
-import { CreateContactInput, GetMessagesQuery } from './contact.validators';
+import { CreateContactInput, GetMessagesQuery } from './contact.validators.js';
 
 export class ContactRepository {
   /**

@@ -8,11 +8,11 @@
  * repository persistence, and email notification triggering.
  */
 
-import { contactRepository, ContactRepository } from './contact.repository';
-import { contactEmailService, ContactEmailService } from './contact.email';
-import { CreateContactInput, GetMessagesQuery, UpdateStatusInput } from './contact.validators';
-import { ApiError } from '../../server/apiError';
-import { logger } from '../../server/logger';
+import { contactRepository, ContactRepository } from './contact.repository.js';
+import { contactEmailService, ContactEmailService } from './contact.email.js';
+import { CreateContactInput, GetMessagesQuery, UpdateStatusInput } from './contact.validators.js';
+import { ApiError } from '../../server/apiError.js';
+import { logger } from '../../server/logger.js';
 
 export class ContactService {
   constructor(

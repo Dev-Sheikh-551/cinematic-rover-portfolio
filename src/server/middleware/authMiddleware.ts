@@ -12,10 +12,10 @@
 
 import { Request, Response, NextFunction } from 'express';
 import { getSession } from '@auth/express';
-import { authConfig } from '../auth';
-import { sendError } from '../response';
-import { logger } from '../logger';
-import { env } from '../config/env';
+import { authConfig } from '../auth.js';
+import { sendError } from '../response.js';
+import { logger } from '../logger.js';
+import { env } from '../config/env.js';
 
 /**
  * requireAuth — Express middleware that validates an active database session.
