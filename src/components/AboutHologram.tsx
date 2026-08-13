@@ -25,22 +25,31 @@ export const AboutHologram: React.FC<AboutHologramProps> = ({ scrollProgress, li
 
     const updateAssembly = () => {
       const p = liveScrollRef ? liveScrollRef.current : scrollProgress;
-      const focusStart = 0.14;
-      const focusEnd = 0.28;
+      const sectionStart = 0.14;
+      const sectionEnd = 0.28;
 
-      let segmentProgress = 0;
-      if (p >= focusStart && p <= focusEnd) {
-        segmentProgress = (p - focusStart) / (focusEnd - focusStart);
-      } else if (p > focusEnd) {
-        segmentProgress = 1;
+      let assembleFactor = 0;
+      if (p < sectionStart) {
+        assembleFactor = 0;
+      } else if (p >= sectionStart && p < 0.19) {
+        // Entrance: assemble into place as user enters About
+        assembleFactor = (p - sectionStart) / (0.19 - sectionStart);
+      } else if (p >= 0.19 && p <= 0.25) {
+        // Hold 100% assembled while reading
+        assembleFactor = 1.0;
+      } else if (p > 0.25 && p <= sectionEnd) {
+        // Exit: gracefully disassemble as user leaves About
+        assembleFactor = (sectionEnd - p) / (sectionEnd - 0.25);
+      } else {
+        assembleFactor = 0;
       }
 
-      const isAssembled = p >= focusStart && p <= focusEnd;
-      const assembleFactor = isAssembled ? Math.sin(segmentProgress * Math.PI) : 0;
+      // Smooth cubic ease for natural mechanical assembly feel
+      const easeAssemble = assembleFactor * assembleFactor * (3 - 2 * assembleFactor);
 
-      const offsetX = (1 - assembleFactor) * 80;
-      const offsetY = (1 - assembleFactor) * -50;
-      const rotationZ = (1 - assembleFactor) * 8;
+      const offsetX = (1 - easeAssemble) * 60;
+      const offsetY = (1 - easeAssemble) * -40;
+      const rotationZ = (1 - easeAssemble) * 6;
 
       if (mainPanelRef.current) {
         mainPanelRef.current.style.transform = `translate3d(${offsetX}px, ${offsetY * 0.5}px, 0px) rotate(${rotationZ * 0.2}deg)`;

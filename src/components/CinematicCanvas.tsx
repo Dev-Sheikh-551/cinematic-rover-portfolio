@@ -293,8 +293,9 @@ export const CinematicCanvas: React.FC<CinematicCanvasProps> = ({
         dims.needsResize = false;
       }
 
-      const width = canvas.width;
-      const height = canvas.height;
+      // Use CSS logical dimensions (dims.width, dims.height) since ctx.setTransform(dpr, ...) handles DPR scaling
+      const width = dims.width || canvas.width;
+      const height = dims.height || canvas.height;
 
       const activeTheme = themeStore.getState();
       const envConfig = ENVIRONMENT_CONFIGS[activeTheme.environment];
@@ -642,6 +643,11 @@ export const CinematicCanvas: React.FC<CinematicCanvasProps> = ({
       // Extract drone transition progress for use in project() below
       const droneProg = stateRef.current.droneProgress;
 
+      // Responsive scale factors
+      const isMobile = width < 768;
+      const isTablet = width >= 768 && width < 1024;
+      const responsiveFocalScale = isMobile ? 0.78 : isTablet ? 0.88 : 1.0;
+
       // 3D Projection Utility (Perspective blending smoothly into Orthographic Blueprint view)
       const project = (pt: Point3D) => {
         // Relative translation with camera shake offset
@@ -665,8 +671,9 @@ export const CinematicCanvas: React.FC<CinematicCanvasProps> = ({
         if (finalZ <= 1 && droneProg < 0.9) return null;
 
         // Orthographic scale doesn't divide by finalZ, giving a perfect isometric/orthographic technical blueprint look
-        const scalePerspective = camera.focal / Math.max(1, finalZ);
-        const scaleOrthographic = 1.95; // Hand-tuned scale that frames the entire track and environment perfectly in Drone view
+        const effectiveFocal = camera.focal * responsiveFocalScale;
+        const scalePerspective = effectiveFocal / Math.max(1, finalZ);
+        const scaleOrthographic = 1.95 * responsiveFocalScale; // Hand-tuned scale that frames track perfectly
         const scale = scalePerspective * (1 - droneProg) + scaleOrthographic * droneProg;
 
         return {
@@ -678,9 +685,6 @@ export const CinematicCanvas: React.FC<CinematicCanvasProps> = ({
       };
 
       // --- ENVIRONMENT RENDERING ---
-      const isMobile = width < 768;
-      const isTablet = width >= 768 && width < 1024;
-      const responsiveFocalScale = isMobile ? 0.78 : isTablet ? 0.88 : 1.0;
 
       // 1. Cinematic Ambient Occlusion Ground Grid
       // Draws an elegant infinite-feeling horizon or grid below the road

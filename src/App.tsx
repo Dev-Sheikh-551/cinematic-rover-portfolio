@@ -104,6 +104,7 @@ const TIMELINE_EVENTS: TimelineEvent[] = [
 
 export default function App() {
   const [scrollProgress, setScrollProgress] = useState(0);
+  const [hasScrolled, setHasScrolled] = useState(false);
   const [activeSection, setActiveSection] = useState('hero');
   const [isMuted, setIsMuted] = useState(true);
   const [isAlternateTheme, setIsAlternateTheme] = useState(false);
@@ -119,6 +120,7 @@ export default function App() {
 
   // Active section ref and main GSAP timeline ref
   const activeSectionRef = useRef('hero');
+  const hasScrolledRef = useRef(false);
   const lastProgressRef = useRef(0);
   const mainTlRef = useRef<gsap.core.Timeline | null>(null);
   // Direct ref for CinematicCanvas scroll progress — bypasses React setState per-frame overhead.
@@ -187,6 +189,19 @@ export default function App() {
       // going through React reconciliation, eliminating the 1-3 frame lag that caused
       // the rover's stop/start stepping while scrolling.
       canvasScrollRef.current = progress;
+
+      // Immediate intro overlay dismissal on scroll start
+      if (progress > 0.003) {
+        if (!hasScrolledRef.current) {
+          hasScrolledRef.current = true;
+          setHasScrolled(true);
+        }
+      } else if (progress <= 0.001) {
+        if (hasScrolledRef.current) {
+          hasScrolledRef.current = false;
+          setHasScrolled(false);
+        }
+      }
 
       // Section boundary detection — fires only ~6 times across the entire scroll,
       // not on every frame. This is all React state needs to drive the UI.
@@ -275,8 +290,8 @@ export default function App() {
       }
     };
 
-    // ── DESKTOP ≥1024px ── 
-    mm.add("(min-width: 1024px)", () => {
+    // ── ALL VIEWPORTS (Desktop, Tablet, Mobile) ──
+    mm.add("(min-width: 0px)", () => {
       const tl = gsap.timeline({ scrollTrigger: { trigger: "body", start: "top top", end: "bottom bottom", scrub: true, id: "section-timeline" } });
       tl.to({}, { duration: 1.0 }, 0);
       tl.fromTo("#hero-content",
@@ -656,14 +671,14 @@ export default function App() {
         })}
       </div>
 
-      {/* INTRO OVERLAY — fades as soon as the user scrolls */}
+      {/* INTRO OVERLAY — fades out immediately as soon as the user begins scrolling */}
       <AnimatePresence>
-        {scrollProgress < 0.015 && (
+        {!hasScrolled && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            exit={{ opacity: 0, transition: { duration: 0.5 } }}
-            transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
+            exit={{ opacity: 0, transition: { duration: 0.2, ease: 'easeOut' } }}
+            transition={{ duration: 0.4, ease: 'easeOut' }}
             className="fixed inset-0 z-40 flex flex-col items-center justify-end pb-16 pointer-events-none select-none"
           >
             <motion.div
