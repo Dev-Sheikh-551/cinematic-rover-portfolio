@@ -171,23 +171,33 @@ export const ProjectShowcaseModal: React.FC<ProjectShowcaseModalProps> = ({ proj
                   </div>
 
                   {/* Screenshot Content or Wireframe Simulator */}
-                  <div className="flex-1 overflow-hidden relative flex items-center justify-center bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 p-6 text-center">
-                    {project.imageUrl ? (
-                      <img
-                        src={project.imageUrl}
-                        alt={project.title}
-                        className="w-full h-full object-cover object-top"
-                      />
-                    ) : (
-                      <div className="space-y-2 font-mono text-xs text-white/70">
-                        <Cpu className="mx-auto text-emerald-400 animate-pulse" size={28} />
-                        <div className="font-bold text-white text-sm">{project.title}</div>
-                        <div className="text-[10px] text-white/40 max-w-xs mx-auto">
-                          Live application wireframe simulator ({deviceMode.toUpperCase()} VIEWPORT)
-                        </div>
+                  {(() => {
+                    const currentImage =
+                      project.images?.[deviceMode] ||
+                      project.images?.desktop ||
+                      project.imageUrl;
+
+                    return (
+                      <div className="flex-1 overflow-hidden relative flex items-center justify-center bg-slate-950 p-0 text-center">
+                        {currentImage ? (
+                          <img
+                            key={deviceMode}
+                            src={currentImage}
+                            alt={`${project.title} (${deviceMode} view)`}
+                            className="w-full h-full object-cover object-top"
+                          />
+                        ) : (
+                          <div className="space-y-2 font-mono text-xs text-white/70 p-6">
+                            <Cpu className="mx-auto text-emerald-400 animate-pulse" size={28} />
+                            <div className="font-bold text-white text-sm">{project.title}</div>
+                            <div className="text-[10px] text-white/40 max-w-xs mx-auto">
+                              Live application wireframe simulator ({deviceMode.toUpperCase()} VIEWPORT)
+                            </div>
+                          </div>
+                        )}
                       </div>
-                    )}
-                  </div>
+                    );
+                  })()}
                 </motion.div>
               </div>
             </div>

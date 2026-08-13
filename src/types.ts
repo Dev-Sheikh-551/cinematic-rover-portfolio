@@ -30,6 +30,11 @@ export interface Project {
   demoUrl?: string | null;
   modelType: 'lander' | 'satellite' | 'drone' | 'radar';
   imageUrl?: string;
+  images?: {
+    desktop?: string;
+    tablet?: string;
+    mobile?: string;
+  };
   featured?: boolean;
   architecture?: {
     challenge: string;

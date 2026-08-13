@@ -25,6 +25,12 @@ export const projectsData: Project[] = [
     githubUrl: 'https://github.com/Dev-Sheikh-551/amana-poultry-farm',
     liveUrl: 'https://amana-poultry-farm.vercel.app/',
     demoUrl: 'https://amana-poultry-farm.vercel.app/',
+    imageUrl: '/amana-desktop.png',
+    images: {
+      desktop: '/amana-desktop.png',
+      tablet: '/amana-tablet.png',
+      mobile: '/amana-mobile.png',
+    },
     featured: true,
     modelType: 'satellite',
     developerNotes: {
@@ -52,6 +58,12 @@ export const projectsData: Project[] = [
     githubUrl: 'https://github.com/Dev-Sheikh-551/school-management-system',
     liveUrl: 'https://sheikh-sms.vercel.app/',
     demoUrl: 'https://sheikh-sms.vercel.app/',
+    imageUrl: '/sms-desktop.png',
+    images: {
+      desktop: '/sms-desktop.png',
+      tablet: '/sms-tablet.png',
+      mobile: '/sms-mobile.png',
+    },
     featured: true,
     modelType: 'lander',
     developerNotes: {
@@ -79,6 +91,12 @@ export const projectsData: Project[] = [
     githubUrl: 'https://github.com/Dev-Sheikh-551/freelance-client-portal',
     liveUrl: null,
     demoUrl: null,
+    imageUrl: '/portfolio-desktop.png',
+    images: {
+      desktop: '/portfolio-desktop.png',
+      tablet: '/portfolio-tablet.png',
+      mobile: '/portfolio-mobile.png',
+    },
     featured: true,
     modelType: 'satellite',
     developerNotes: {
@@ -106,6 +124,12 @@ export const projectsData: Project[] = [
     githubUrl: 'https://github.com/Dev-Sheikh-551/coffee-business-app',
     liveUrl: 'https://coffee-business-app.vercel.app/',
     demoUrl: 'https://coffee-business-app.vercel.app/',
+    imageUrl: '/coffee-desktop.png',
+    images: {
+      desktop: '/coffee-desktop.png',
+      tablet: '/coffee-tablet.png',
+      mobile: '/coffee-mobile.png',
+    },
     featured: true,
     modelType: 'drone',
     developerNotes: {
@@ -133,6 +157,12 @@ export const projectsData: Project[] = [
     githubUrl: 'https://github.com/Dev-Sheikh-551/product-list-with-cart',
     liveUrl: 'https://product-list-with-cart-gold-seven.vercel.app/',
     demoUrl: 'https://product-list-with-cart-gold-seven.vercel.app/',
+    imageUrl: '/products-list-desktop.png',
+    images: {
+      desktop: '/products-list-desktop.png',
+      tablet: '/products-list-tablet.png',
+      mobile: '/products-list-mobile.png',
+    },
     featured: true,
     modelType: 'radar',
     developerNotes: {
@@ -160,6 +190,12 @@ export const projectsData: Project[] = [
     githubUrl: 'https://github.com/Dev-Sheikh-551/2-designo-multi-page-website',
     liveUrl: 'https://2-designo-multi-page-website.vercel.app/',
     demoUrl: 'https://2-designo-multi-page-website.vercel.app/',
+    imageUrl: '/designo-desktop.png',
+    images: {
+      desktop: '/designo-desktop.png',
+      tablet: '/designo-tablet.png',
+      mobile: '/designo-mobile.png',
+    },
     featured: false,
     modelType: 'lander',
   },
@@ -180,6 +216,12 @@ export const projectsData: Project[] = [
     githubUrl: 'https://github.com/Dev-Sheikh-551/1-photosnap-multi-page-website',
     liveUrl: 'https://1-photosnap-multi-page-website.vercel.app/',
     demoUrl: 'https://1-photosnap-multi-page-website.vercel.app/',
+    imageUrl: '/photosnap-desktop.png',
+    images: {
+      desktop: '/photosnap-desktop.png',
+      tablet: '/photosnap-tablet.png',
+      mobile: '/photosnap-mobile.png',
+    },
     featured: false,
     modelType: 'satellite',
   },
@@ -220,6 +262,12 @@ export const projectsData: Project[] = [
     githubUrl: 'https://github.com/Dev-Sheikh-551/Random-dad-jokes-with-react',
     liveUrl: 'https://random-dad-jokes-with-react.vercel.app/',
     demoUrl: 'https://random-dad-jokes-with-react.vercel.app/',
+    imageUrl: '/dad-joke-desktop.png',
+    images: {
+      desktop: '/dad-joke-desktop.png',
+      tablet: '/dad-joke-tablet.png',
+      mobile: '/dad-joke-mobile.png',
+    },
     featured: false,
     modelType: 'drone',
   },
