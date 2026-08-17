@@ -70,6 +70,13 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
       icon: <Navigation size={12} />
     },
     {
+      id: 'go-testimonials',
+      title: '> go testimonials (reviews)',
+      category: 'NAVIGATION',
+      action: () => onNavigate('testimonials'),
+      icon: <Navigation size={12} />
+    },
+    {
       id: 'go-contact',
       title: '> go contact (bottom)',
       category: 'NAVIGATION',

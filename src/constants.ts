@@ -8,7 +8,7 @@ export const TIMELINE_OFFSETS = {
   about:        { start: 0.14, end: 0.28 },
   skills:       { start: 0.28, end: 0.44 },
   projects:     { start: 0.44, end: 0.58 },
-  testimonials: { start: 0.58, end: 0.72 },
-  timeline:     { start: 0.72, end: 0.87 },
+  timeline:     { start: 0.58, end: 0.72 },
+  testimonials: { start: 0.72, end: 0.87 },
   contact:      { start: 0.87, end: 1.00 },
 };

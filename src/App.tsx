@@ -47,6 +47,7 @@ import { AchievementToasts } from './components/AchievementToasts';
 import { TestimonialsWall } from './components/TestimonialsWall';
 import { EndingSequence } from './components/EndingSequence';
 import { LoadingScreen } from './components/LoadingScreen';
+import { DepthText } from './components/DepthText';
 import { themeStore } from './themeStore';
 import { personalData } from './data';
 import { TimelineEvent, Project } from './types';
@@ -212,12 +213,12 @@ export default function App() {
         currentSec = 'about';
       } else if (progress >= TIMELINE_OFFSETS.skills.start && progress < TIMELINE_OFFSETS.projects.start) {
         currentSec = 'skills';
-      } else if (progress >= TIMELINE_OFFSETS.projects.start && progress < TIMELINE_OFFSETS.testimonials.start) {
+      } else if (progress >= TIMELINE_OFFSETS.projects.start && progress < TIMELINE_OFFSETS.timeline.start) {
         currentSec = 'projects';
-      } else if (progress >= TIMELINE_OFFSETS.testimonials.start && progress < TIMELINE_OFFSETS.timeline.start) {
-        currentSec = 'testimonials';
-      } else if (progress >= TIMELINE_OFFSETS.timeline.start && progress < TIMELINE_OFFSETS.contact.start) {
+      } else if (progress >= TIMELINE_OFFSETS.timeline.start && progress < TIMELINE_OFFSETS.testimonials.start) {
         currentSec = 'timeline';
+      } else if (progress >= TIMELINE_OFFSETS.testimonials.start && progress < TIMELINE_OFFSETS.contact.start) {
+        currentSec = 'testimonials';
       } else {
         currentSec = 'contact';
       }
@@ -302,8 +303,8 @@ export default function App() {
       addSection(tl, "#about-content", TIMELINE_OFFSETS.about.start, TIMELINE_OFFSETS.about.end, 0.04, 0.04, 1.0);
       addSection(tl, "#skills-content", TIMELINE_OFFSETS.skills.start, TIMELINE_OFFSETS.skills.end, 0.04, 0.04, 1.0);
       addSection(tl, "#projects-content", TIMELINE_OFFSETS.projects.start, TIMELINE_OFFSETS.projects.end, 0.04, 0.04, 1.0);
-      addSection(tl, "#testimonials-content", TIMELINE_OFFSETS.testimonials.start, TIMELINE_OFFSETS.testimonials.end, 0.04, 0.04, 1.0);
       addSection(tl, "#timeline-content", TIMELINE_OFFSETS.timeline.start, TIMELINE_OFFSETS.timeline.end, 0.04, 0.04, 1.0);
+      addSection(tl, "#testimonials-content", TIMELINE_OFFSETS.testimonials.start, TIMELINE_OFFSETS.testimonials.end, 0.04, 0.04, 1.0);
 
       // Contact content entrance
       tl.fromTo("#contact-content",
@@ -350,7 +351,7 @@ export default function App() {
       const deltaY = touchEndY - touchStartY;
       const deltaX = touchEndX - touchStartX;
       if (timeDiff < 400 && Math.abs(deltaY) > 55 && Math.abs(deltaY) > Math.abs(deltaX)) {
-        const sections = ['hero', 'about', 'skills', 'projects', 'testimonials', 'timeline', 'contact'];
+        const sections = ['hero', 'about', 'skills', 'projects', 'timeline', 'testimonials', 'contact'];
         const currentIndex = sections.indexOf(activeSectionRef.current);
         if (deltaY > 55 && currentIndex > 0) {
           navigateToSection(sections[currentIndex - 1]);
@@ -555,8 +556,8 @@ export default function App() {
           { id: 'about', label: '02 — Who I Am' },
           { id: 'skills', label: '03 — Toolkit' },
           { id: 'projects', label: '04 — Selected Work' },
-          { id: 'testimonials', label: '05 — Reviews' },
-          { id: 'timeline', label: '06 — Journey' },
+          { id: 'timeline', label: '05 — Journey' },
+          { id: 'testimonials', label: '06 — Reviews' },
           { id: 'contact', label: '07 — Contact' }
         ].map((item) => {
           const isActive = activeSection === item.id;
@@ -702,8 +703,23 @@ export default function App() {
         <section id="hero-anchor" className="min-h-screen flex flex-col items-center justify-center text-center px-4 relative">
           <div id="hero-content" className="w-full flex flex-col items-center justify-center text-center relative h-full">
             <div className="space-y-6 max-w-4xl">
-              <h1 className="text-4xl sm:text-6xl md:text-7xl font-sans tracking-[3px] sm:tracking-[5px] md:tracking-[7px] font-bold text-white select-none leading-tight text-balance">
-                {personalData.name}
+              <h1 className="select-none leading-none font-sans">
+                <DepthText
+                  text={personalData.name}
+                  layers={34}
+                  depth={2.4}
+                  faceColor="#ffffff"
+                  depthColor="#10b981"
+                  tilt={7.5}
+                  pointerTracking={true}
+                  smoothing={0.14}
+                  perspective={900}
+                  autoOrbit={true}
+                  orbitSpeed={0.35}
+                  fontSize="clamp(1.75rem, 7vw, 5rem)"
+                  fontWeight={900}
+                  shadow={true}
+                />
               </h1>
               <p className="text-white/70 text-sm sm:text-base font-sans max-w-2xl mx-auto leading-[1.8] font-light">
                 {personalData.title}. Crafting polished digital experiences that combine thoughtful design, smooth interactions, and scalable engineering.
@@ -746,19 +762,19 @@ export default function App() {
           </div>
         </section>
 
-        {/* SECTION 5: TESTIMONIALS */}
-        <section id="testimonials-anchor" className="relative min-h-screen flex flex-col justify-center py-12 overflow-hidden">
-          <div id="testimonials-content" className="w-full relative">
-            <div className="scanner-line absolute left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 pointer-events-none z-30" />
-            <TestimonialsWall />
-          </div>
-        </section>
-
-        {/* SECTION 6: EXPERIENCE */}
+        {/* SECTION 5: EXPERIENCE */}
         <section id="timeline-anchor" className="relative min-h-screen flex flex-col justify-center py-12 overflow-hidden">
           <div id="timeline-content" className="w-full relative">
             <div className="scanner-line absolute left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 pointer-events-none z-30" />
             <TimelinePath scrollProgress={scrollProgress} onMilestoneReached={handleMilestoneReached} />
+          </div>
+        </section>
+
+        {/* SECTION 6: TESTIMONIALS */}
+        <section id="testimonials-anchor" className="relative min-h-screen flex flex-col justify-center py-12 overflow-hidden">
+          <div id="testimonials-content" className="w-full relative">
+            <div className="scanner-line absolute left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 pointer-events-none z-30" />
+            <TestimonialsWall />
           </div>
         </section>
 
